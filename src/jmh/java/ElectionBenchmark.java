@@ -37,7 +37,7 @@ public class ElectionBenchmark {
         public int[][][] votes;
 
         // an election so we can use methods from it for easier setup
-        public Election election;
+        public BaseElection election;
 
         @Setup(Level.Invocation)
         public void setUp() {
@@ -47,7 +47,7 @@ public class ElectionBenchmark {
             int num_votes = 50;
 
             // set election object
-            election = new Election("Benchmarking Election", "11/05/21", num_candidates, bits);
+            election = new BaseElection("Benchmarking Election", "11/05/21", num_candidates, bits);
 
             // generate some random votes
             votes = new int[num_votes][num_candidates][num_candidates];
@@ -85,7 +85,7 @@ public class ElectionBenchmark {
     @Warmup(iterations = 5, time = 250, timeUnit = TimeUnit.MILLISECONDS)
     public void benchmarkBallotCreation(Blackhole blackhole, ElectionState state) {
 
-        Election e = state.election;
+        BaseElection e = state.election;
 
         int voter = e.addBallot(state.votes[0], false);
         blackhole.consume(voter);
@@ -100,7 +100,7 @@ public class ElectionBenchmark {
     @Warmup(iterations = 3, time = 250, timeUnit = TimeUnit.MILLISECONDS)
     public void benchmarkTallyVerification(Blackhole blackhole, ElectionState state) {
 
-        Election e = state.election;
+        BaseElection e = state.election;
 
         boolean verified = e.verifyTallies();
         blackhole.consume(verified);
@@ -116,9 +116,9 @@ public class ElectionBenchmark {
     @Warmup(iterations = 5, time = 250, timeUnit = TimeUnit.MILLISECONDS)
     public void benchmarkNIZKPsVerification(Blackhole blackhole, ElectionState state) {
 
-        Election e = state.election;
+        BaseElection e = state.election;
 
-        Receipt receipt = e.getBulletinBoard().getReceipt(0);
+        BaseReceipt receipt = e.getBulletinBoard().getReceipt(0);
 
         boolean verified = e.verifyNIZKPSforReceipt(receipt);
         blackhole.consume(verified);
