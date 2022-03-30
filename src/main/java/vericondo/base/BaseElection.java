@@ -519,4 +519,25 @@ public class BaseElection extends Election {
 
     }
 
+    // convert a vote given as a permutation to a pairwise comparison matrix
+    public int[][] convertToMatrix(int[] vote) {
+
+        ArrayList<Integer> seen = new ArrayList<Integer>();
+
+        int[][] matrix = new int[num_candidates][num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            int candidate = vote[i];
+            for (int j = 0; j < num_candidates; j++) {
+                if (!seen.contains(j)) {
+                    matrix[candidate][j] = 1;
+                    matrix[j][candidate] = 0;
+                }
+            }
+            seen.add(candidate);
+        }
+
+        return matrix;
+
+    }
+
 }

@@ -19,6 +19,23 @@ public class BaseBallotEncryptor extends BallotEncryptor {
 
     }
 
+    // generates a matrix of random numbers
+    protected BigInteger[][] generateRandomness() {
+        BigInteger limit = q.subtract(BigInteger.ONE);
+        BigInteger[][] x = new BigInteger[num_candidates][num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                if (i == j) {
+                    x[i][j] = BigInteger.ZERO;
+                } else {
+                    // ensures each x(i,j) is between 1 and q-1 (i.e. in Z*q)
+                    x[i][j] = genRandom(limit);
+                }
+            }
+        }
+        return x;
+    }
+
     public BaseBallot makeBallot(int voter, int[][] vote) {
 
         BigInteger[][] b = new BigInteger[num_candidates][num_candidates];
@@ -336,6 +353,42 @@ public class BaseBallotEncryptor extends BallotEncryptor {
 
         return nizkp4;
 
+    }
+
+    // helper function to compute row products
+    public BigInteger[] computeRowProducts(BigInteger[][] m) {
+        BigInteger[] r = new BigInteger[num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = m[i][0];
+        }
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 1; j < num_candidates; j++) {
+                r[i] = r[i].multiply(m[i][j]);
+            }
+        }
+        // we are working under modulus p
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = r[i].mod(p);
+        }
+        return r;
+    }
+
+    // helper function to compute row sums
+    protected BigInteger[] computeRowSums(BigInteger[][] m) {
+        BigInteger[] r = new BigInteger[num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = m[i][0];
+        }
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 1; j < num_candidates; j++) {
+                r[i] = r[i].add(m[i][j]);
+            }
+        }
+        // we are working under modulus p
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = r[i].mod(p);
+        }
+        return r;
     }
 
 }
