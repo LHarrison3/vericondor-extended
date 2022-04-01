@@ -8,6 +8,7 @@ public class Program {
     // try out the class
     public static void main(String[] args) {
 
+        /*
         BigInteger g0 = BigInteger.valueOf(5);
         BigInteger g1 = BigInteger.valueOf(7);
         BigInteger p = BigInteger.valueOf(23);
@@ -28,7 +29,24 @@ public class Program {
         int[][] v = {{0,0,0},{0,0},{0}};
 
         PrefRelBallot b = be.makeBallot(0, v);
+        */
 
+        int num_candidates = 4;
+
+        PrefRelElection election = new PrefRelElection("Sample Election", "01/04/22", num_candidates, 112);
+
+        int[] ranking = {1,2,0,3};
+        int[][] vote = election.convertToPrefRel(ranking);
+
+        int[] ranking1 = {3,2,1,0};
+        int[][] vote1 = election.convertToPrefRel(ranking1);
+
+        int[] ranking2 = {0,1,2,3};
+        int[][] vote2 = election.convertToPrefRel(ranking2);
+
+        System.out.println(Arrays.deepToString(vote));
+        System.out.println(Arrays.deepToString(vote1));
+        System.out.println(Arrays.deepToString(vote2));
 
         /*
         int num_candidates = 4;

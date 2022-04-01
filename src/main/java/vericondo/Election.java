@@ -5,14 +5,6 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-// different methods to determine the winner of the election
-enum Method {
-    MINIMAX,
-    SCHULZE,
-    RANKEDPAIRS,
-    COPELAND
-}
-
 public class Election {
 
     // parameters concerning candidates

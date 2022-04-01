@@ -64,11 +64,6 @@ public class PrefRelBallotEncryptor extends BallotEncryptor {
         return new PrefRelBallot(voter, vote, b, y, x, nizkp0, nizkp1, nizkp2);
     }
 
-    /*
-    TODO: from this point, change the NIZKP functions for the new equations on paper
-    */
-
-
     // helper function to generate NIZKP for the first conjunction
     private BigInteger[][][] genNIZKP0(int voter, BigInteger[][] x, BigInteger[][] y) {
 
