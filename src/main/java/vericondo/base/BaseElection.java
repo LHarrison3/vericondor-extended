@@ -320,13 +320,12 @@ public class BaseElection extends Election {
 
         int voter = receipt.id();
 
-        boolean hold = true;
-        hold = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
-        hold = verifyNIZKP1(voter, receipt.b(), receipt.getNIZKP1());
-        hold = verifyNIZKP2(voter, receipt.b(), receipt.getNIZKP2());
-        hold = verifyNIZKP3(voter, receipt.b(), receipt.getNIZKP3());
-        hold = verifyNIZKP4(voter, receipt.b(), receipt.getNIZKP4());
-        return hold;
+        boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
+        boolean hold1 = verifyNIZKP1(voter, receipt.b(), receipt.getNIZKP1());
+        boolean hold2 = verifyNIZKP2(voter, receipt.b(), receipt.getNIZKP2());
+        boolean hold3 = verifyNIZKP3(voter, receipt.b(), receipt.getNIZKP3());
+        boolean hold4 = verifyNIZKP4(voter, receipt.b(), receipt.getNIZKP4());
+        return (hold0 && hold1 && hold2 && hold3 && hold4);
 
     }
 

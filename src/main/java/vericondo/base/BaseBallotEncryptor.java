@@ -94,7 +94,7 @@ public class BaseBallotEncryptor extends BallotEncryptor {
                 t = g1.modPow(w, p);
                 BigInteger[] arr = {BigInteger.valueOf(voter), g1, y[i][j], t};
                 c = hash(arr);
-                r = w.subtract(c.multiply(x[i][j])).mod(q);
+                r = w.subtract(c.multiply(x[i][j])).mod(p.subtract(BigInteger.ONE));
                 nizkp0[i][j][0] = c;
                 nizkp0[i][j][1] = r;
             }

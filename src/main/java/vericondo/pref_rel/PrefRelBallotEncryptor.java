@@ -82,7 +82,7 @@ public class PrefRelBallotEncryptor extends BallotEncryptor {
                 t = g1.modPow(w, p);
                 BigInteger[] arr = {BigInteger.valueOf(voter), g1, y[i][j], t};
                 c = hash(arr);
-                r = w.subtract(c.multiply(x[i][j])).mod(q);
+                r = w.subtract(c.multiply(x[i][j])).mod(p.subtract(BigInteger.ONE));
                 nizkp0[i][j][0] = c;
                 nizkp0[i][j][1] = r;
             }
@@ -239,18 +239,18 @@ public class PrefRelBallotEncryptor extends BallotEncryptor {
     // parameterised over c
     public BigInteger computePrefDiffsAt(int c, BigInteger[][] m) {
 
-        BigInteger a = BigInteger.ZERO;
-        BigInteger b = BigInteger.ZERO;
+        BigInteger a0 = BigInteger.ZERO;
+        BigInteger a1 = BigInteger.ZERO;
 
         for (int i = c+1; i < num_candidates; i++) {
-            a = a.add(m[c][i-c-1]);
+            a0 = a0.add(m[c][i-c-1]);
         }
 
         for (int i = 0; i < c; i++) {
-            b = b.add(m[i][c-i-1]);
+            a1 = a1.add(m[i][c-i-1]);
         }
         //return a.subtract(b).add(BigInteger.valueOf(c)).mod(p);
-        return a.subtract(b).mod(p);
+        return a0.subtract(a1);
 
     }
 
@@ -258,18 +258,21 @@ public class PrefRelBallotEncryptor extends BallotEncryptor {
     // parameterised over c
     public BigInteger computePrefDivsAt(int c, BigInteger[][] m) {
 
-        BigInteger a = BigInteger.ONE;
-        BigInteger b = BigInteger.ONE;
+        BigInteger a0 = BigInteger.ONE;
+        BigInteger a1 = BigInteger.ONE;
+
+        // we are working under the modulus p here as we are multiplying
+        // encrypted values with this function
 
         for (int i = c+1; i < num_candidates; i++) {
-            a = a.multiply(m[c][i-c-1]);
+            a0 = a0.multiply(m[c][i-c-1]).mod(p);
         }
 
         for (int i = 0; i < c; i++) {
-            b = b.multiply(m[i][c-i-1]);
+            a1 = a1.multiply(m[i][c-i-1]).mod(p);
         }
 
-        return a.multiply(b.modInverse(p)).mod(p);
+        return a0.multiply(a1.modInverse(p)).mod(p);
 
     }
 

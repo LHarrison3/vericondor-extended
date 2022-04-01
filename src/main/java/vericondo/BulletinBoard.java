@@ -47,8 +47,8 @@ public class BulletinBoard {
 
     // update the tally
     public void updateTally(int[][] vote) {
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
+        for (int i = 0; i < vote.length; i++) {
+            for (int j = 0; j < vote[i].length; j++) {
                 t[i][j] += vote[i][j];
             }
         }
@@ -56,8 +56,8 @@ public class BulletinBoard {
 
     // update the sum of randomness
     public void updateSum(BigInteger[][] x) {
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
+        for (int i = 0; i < x.length; i++) {
+            for (int j = 0; j < x[i].length; j++) {
                 s[i][j] = s[i][j].add(x[i][j]).mod(p);
             }
         }
@@ -76,15 +76,15 @@ public class BulletinBoard {
         System.out.println("----------------------------------------------------");
         System.out.println("TALLIES");
         System.out.println("t :");
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
+        for (int i = 0; i < t.length; i++) {
+            for (int j = 0; j < t[i].length; j++) {
                 System.out.print(t[i][j] + " ");
             }
             System.out.println("");
         }
         System.out.println("s :");
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
+        for (int i = 0; i < s.length; i++) {
+            for (int j = 0; j < s[i].length; j++) {
                 if (i == j) {
                     System.out.print(s[i][j] + " ");
                 } else {
