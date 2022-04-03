@@ -73,10 +73,10 @@ public class Program {
         election.finaliseBallot(4, Type.CONFIRMED);
         election.finaliseBallot(6, Type.AUDITED);
 
-        //System.out.println(election.determineWinner(Method.MINIMAX));
-        //System.out.println(election.determineWinner(Method.COPELAND));
-        //System.out.println(election.determineWinner(Method.RANKEDPAIRS));
-        //System.out.println(election.determineWinner(Method.SCHULZE));
+        System.out.println(election.determineWinner(Method.MINIMAX));
+        System.out.println(election.determineWinner(Method.COPELAND));
+        System.out.println(election.determineWinner(Method.RANKEDPAIRS));
+        System.out.println(election.determineWinner(Method.SCHULZE));
         System.out.println(election.verifyElection());
 
 

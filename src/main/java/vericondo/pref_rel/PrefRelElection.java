@@ -1,6 +1,7 @@
 package vericondo;
 
 import java.util.*;
+import java.lang.Math;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,178 +36,42 @@ public class PrefRelElection extends Election {
         return this.bb.t();
     }
 
-    /*
+    // convert the tally as a preference relation to a pairwise comparison matrix
+    public int[][] tallyAsMatrix() {
+
+        int[][] t = t();
+        int[][] m = new int[num_candidates][num_candidates];
+
+        for (int i = 0; i < num_candidates - 1; i++) {
+            System.arraycopy(t[i], 0, m[i], i+1, num_candidates - i - 1);
+        }
+
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = i+1; j < num_candidates && j != i; j++) {
+                m[j][i] = Math.abs(this.bb.getConfirmedReceipts().size() - m[i][j]);
+            }
+        }
+
+        return m;
+
+    }
+
     // determine a winner of the election using the specified method
     public int determineWinner(Method method) {
+
+        // convert the preference relation t to a pairwise comparison matrix
+        int[][] m = tallyAsMatrix();
+
         if (method == Method.MINIMAX) {
-            return determineMinimaxWinner();
+            return determineMinimaxWinner(m);
         } else if (method == Method.COPELAND) {
-            return determineCopelandWinner();
+            return determineCopelandWinner(m);
         } else if (method == Method.RANKEDPAIRS) {
-            return determineRankedPairsWinner();
+            return determineRankedPairsWinner(m);
         } else {
-            return determineSchulzeWinner();
+            return determineSchulzeWinner(m);
         }
     }
-
-    // determine the minimax winner
-    private int determineMinimaxWinner() {
-        int[][] t = t();
-        // find the greatest pairwise defeat for each candidate
-        int[] defeats = new int[num_candidates];
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                if (t[j][i] > defeats[i]) {
-                    defeats[i] = t[j][i];
-                }
-            }
-        }
-        int winner = 0;
-        double max = Double.POSITIVE_INFINITY;
-        // the winner has the smallest pairwise defeat compared to all other candidates
-        for (int i = 0; i < num_candidates; i++) {
-            if (defeats[i] < max) {
-                max = (double) defeats[i];
-                winner = i;
-            }
-        }
-        return winner;
-    }
-
-    // determine the copeland winner
-    private int determineCopelandWinner() {
-        int[][] t = t();
-        double[][] points = new double[num_candidates][num_candidates];
-        // compute copeland points
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                if (t[i][j] > t[j][i]) {
-                    points[i][j] = 1;
-                } else if (t[i][j] == t[j][i]) {
-                    points[i][j] = 0.5;
-                } else {
-                    points[i][j] = 0;
-                }
-            }
-        }
-        // compute copeland scores and find the maximum
-        double max = 0;
-        int winner = 0;
-        for (int i = 0; i < num_candidates; i++) {
-            double score = 0;
-            for (int j = 0; j < num_candidates; j++) {
-                score += points[i][j];
-            }
-            if (score > max) {
-                max = score;
-                winner = i;
-            }
-        }
-        return winner;
-    }
-
-    // determine the ranked pairs winner
-    private int determineRankedPairsWinner() {
-
-        int[][] t = t();
-
-        // generate a random permutation of candidates to use as the tie breaker
-        ArrayList<Integer> tiebreaker = new ArrayList<Integer>();
-        for (int i = 0; i < num_candidates; i++) {
-            tiebreaker.add(i);
-        }
-        Collections.shuffle(tiebreaker);
-
-        // create a list of all candidate pairings
-        ArrayList<CandidatePair> pairings = new ArrayList<CandidatePair>();
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                // does not make sense to have a pair between the same candidate
-                if (i == j) {
-                    continue;
-                }
-                CandidatePair pair = new CandidatePair(i,j,t,tiebreaker);
-                pairings.add(pair);
-            }
-        }
-
-        // sort the pairings so that the "best" ones appear first
-        Collections.sort(pairings, Collections.reverseOrder());
-
-        // use a directed (acyclic) graph to compute the ranking of the candidates
-        DAG digraph = new DAG();
-        for (int i = 0; i < num_candidates; i++) {
-            digraph.addNode(i);
-        }
-        for (CandidatePair pair : pairings) {
-            digraph.addEdge(pair.fst(), pair.snd());
-        }
-
-        // extract the ranking via a topological sort
-        ArrayList<Integer> ranking = digraph.topologicalSort();
-
-        // return the winner (first in the ranking)
-        return ranking.get(0);
-
-    }
-
-    // determine the schulze winner
-    private int determineSchulzeWinner() {
-
-        int[][] t = t();
-        int[][] p = new int[num_candidates][num_candidates];
-
-        // compute strongest path strengths using Floyd-Warshall
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                if (i != j) {
-                    if (t[i][j] > t[j][i]) {
-                        p[i][j] = t[i][j];
-                    } else {
-                        p[i][j] = 0;
-                    }
-                }
-            }
-        }
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                if (i != j) {
-                    for (int k = 0; k < num_candidates; k++) {
-                        if (i != k && j != k) {
-                            p[j][k] = Math.max(p[j][k], Math.min(p[j][i], p[i][k]));
-                        }
-                    }
-                }
-            }
-        }
-
-        // determine the schulze winners
-        boolean[] winners = new boolean[num_candidates];
-        for (int i = 0; i < num_candidates; i++) {
-            winners[i] = true;
-        }
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                if (i != j) {
-                    if (p[j][i] > p[i][j]) {
-                        winners[i] = false;
-                    }
-                }
-            }
-        }
-
-        // pick any winner
-        int winner = 0;
-        for (int i = 0; i < num_candidates; i++) {
-            if (winners[i]) {
-                winner = i;
-            }
-        }
-
-        return winner;
-
-    }
-    */
 
     // add a ballot to the election
     public int addBallot(int[][] vote, boolean displayPartialReceipt) {
