@@ -107,15 +107,13 @@ public class IndiffReceipt extends Receipt {
                     String element3 = nizkp3[i][j][3].toString();
                     String element4 = nizkp3[i][j][4].toString();
                     String element5 = nizkp3[i][j][5].toString();
-                    String element6 = nizkp3[i][j][6].toString();
                     String first0 = element0.substring(0, n_digits);
                     String first1 = element1.substring(0, n_digits);
                     String first2 = element2.substring(0, n_digits);
                     String first3 = element3.substring(0, n_digits);
                     String first4 = element4.substring(0, n_digits);
                     String first5 = element5.substring(0, n_digits);
-                    String first6 = element6.substring(0, n_digits);
-                    System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + "," + first4 + "," + first5 + "," + first6 + ") ");
+                    System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + "," + first4 + "," + first5 + ") ");
                 }
             }
             System.out.println("");

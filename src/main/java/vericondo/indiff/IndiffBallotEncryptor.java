@@ -356,6 +356,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
             }
         }
 
+        BigInteger r;
         BigInteger r_alpha;
         BigInteger r_alpha_p;
         BigInteger r_beta;
@@ -363,18 +364,21 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
         BigInteger t1;
         BigInteger t1_p;
         BigInteger t2;
-        BigInteger t2_p;
         BigInteger c;
         BigInteger c1;
         BigInteger c2;
         BigInteger s1;
         BigInteger s1_p;
         BigInteger s2;
-        BigInteger s2_p;
         BigInteger y_prod_min;
         BigInteger b_prod_min;
         BigInteger x_sum_min;
         BigInteger v_sum_min;
+        BigInteger T;
+        BigInteger P;
+        BigInteger Q;
+        BigInteger phi;
+        BigInteger psi;
         for (int i = 0; i < num_candidates; i++) {
 
             BigInteger y_il_prod = rowProductAt(y, i);
@@ -398,48 +402,50 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                 y_prod_min = y_il_prod.multiply(y_jl_prod.modInverse(p)).mod(p);
                 b_prod_min = b_il_prod.multiply(b_jl_prod.modInverse(p)).mod(p);
 
-                x_sum_min = x_il_sum.subtract(x_jl_sum).mod(q);
-                v_sum_min = v_il_sum.subtract(v_jl_sum).mod(q);
+                x_sum_min = x_il_sum.subtract(x_jl_sum).mod(p.subtract(BigInteger.ONE));
+                v_sum_min = v_il_sum.subtract(v_jl_sum).mod(p.subtract(BigInteger.ONE));
 
-                // begin with reduction to equality proof
-                BigInteger r = genRandom(limit);
-                BigInteger T = g1.modPow(r.multiply(v_sum_min).mod(q),p).modInverse(p);
-                BigInteger phi = r.multiply(x_sum_min);
-                BigInteger psi = r.negate();
-                BigInteger P = y_prod_min;
-                BigInteger Q = b_prod_min;
-
+                // generate necessary randomness for both disjunctive branches
+                r = genRandom(limit);
                 r_alpha = genRandom(limit);
                 r_alpha_p = genRandom(limit);
                 r_beta = genRandom(limit);
                 r_beta_p = genRandom(limit);
 
+                P = y_prod_min;
+                Q = b_prod_min;
+
                 if (!(vote[i][j] == 1 && vote[j][i] == 1)) {
+
+                    T = g1.modPow(v_sum_min,p).modPow(r,p).modInverse(p);
+                    phi = r.multiply(x_sum_min).mod(p.subtract(BigInteger.ONE));
+                    psi = r.negate().mod(p.subtract(BigInteger.ONE));
+
                     t1 = g0.modPow(r_alpha,p).multiply(Q.modPow(r_alpha_p,p)).mod(p);
                     t1_p = g1.modPow(r_alpha,p).multiply(P.modPow(r_alpha_p,p)).mod(p);
-                    t2 = g0.modPow(r_beta,p).multiply((b[i][j].multiply(g1.modInverse(p)).mod(p)).modPow(r_beta_p,p).modInverse(p)).mod(p);
-                    t2_p = g0.modPow(r_beta,p).multiply((b[j][i].multiply(g1.modInverse(p)).mod(p)).modPow(r_beta_p,p).modInverse(p)).mod(p);
-                    BigInteger[] arr = {g0,g1,Q,P,T,BigInteger.ONE,t1,t1_p,t2,t2_p};
-                    c = hash(arr);
-                    c2 = r_beta_p;
-                    c1 = c.subtract(c2).mod(q);
-                    s1 = r_alpha.add(phi.multiply(c1)).mod(q);
-                    s1_p = r_alpha_p.add(psi.multiply(c1)).mod(q);
-                    s2 = r_beta;
-                    s2_p = r_beta;
+                    t2 = (b[i][j].multiply(b[j][i]).mod(p)).multiply((g1.modPow(BigInteger.valueOf(2),p)).modInverse(p)).modPow(r_beta,p).multiply(g0.modPow(r_beta_p,p)).mod(p);
+                    BigInteger[] arr = {g0,g1,Q,P,T,BigInteger.ONE,t1,t1_p,t2};
+                    c = hash(arr).mod(p.subtract(BigInteger.ONE));
+                    c2 = r_beta;
+                    c1 = c.subtract(c2).mod(p.subtract(BigInteger.ONE));
+                    s1 = r_alpha.add(phi.multiply(c1).mod(p.subtract(BigInteger.ONE))).mod(p.subtract(BigInteger.ONE));
+                    s1_p = r_alpha_p.add(psi.multiply(c1).mod(p.subtract(BigInteger.ONE))).mod(p.subtract(BigInteger.ONE));
+                    s2 = r_beta_p;
                 } else {
+
+                    T = g1.modPow(r,p);
+
                     t1 = g0.modPow(r_alpha,p).multiply(Q.modPow(r_alpha_p,p)).mod(p).multiply(T.modPow(r_beta_p,p).modInverse(p)).mod(p);
                     t1_p = g1.modPow(r_alpha,p).multiply(P.modPow(r_alpha_p,p)).mod(p);
                     t2 = g0.modPow(r_beta,p);
-                    t2_p = g0.modPow(r_beta,p);
-                    BigInteger[] arr = {g0,g1,Q,P,T,BigInteger.ONE,t1,t1_p,t2,t2_p};
-                    c = hash(arr);
+                    BigInteger[] arr = {g0,g1,Q,P,T,BigInteger.ONE,t1,t1_p,t2};
+                    c = hash(arr).mod(p.subtract(BigInteger.ONE));
                     c1 = r_beta_p;
-                    c2 = c.subtract(c1).mod(q);
+                    c2 = c.subtract(c1).mod(p.subtract(BigInteger.ONE));
                     s1 = r_alpha;
-                    s1_p = r_alpha;
-                    s2 = r_beta.add(x[i][j].multiply(c2)).mod(q);
-                    s2_p = r_beta.add(x[j][i].multiply(c2)).mod(q);
+                    s1_p = r_alpha_p;
+                    s2 = r_beta.subtract((x[i][j].add(x[j][i])).mod(p.subtract(BigInteger.ONE)).multiply(c2).mod(p.subtract(BigInteger.ONE))).mod(p.subtract(BigInteger.ONE));
+
                 }
 
                 nizkp3[i][j][0] = c1;
@@ -447,8 +453,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                 nizkp3[i][j][2] = s1;
                 nizkp3[i][j][3] = s1_p;
                 nizkp3[i][j][4] = s2;
-                nizkp3[i][j][5] = s2_p;
-                nizkp3[i][j][6] = T;
+                nizkp3[i][j][5] = T;
 
             }
 
@@ -474,7 +479,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
         for (int l = 0; l < num_candidates; l++) {
             r = r.add(m[i][l]);
         }
-        r = r.mod(p.subtract(BigInteger.ONE)); // this might need to be mod q
+        r = r.mod(p.subtract(BigInteger.ONE));
         return r;
     }
 

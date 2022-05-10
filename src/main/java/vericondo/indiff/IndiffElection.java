@@ -337,10 +337,8 @@ public class IndiffElection extends Election {
         BigInteger t1;
         BigInteger t1_p;
         BigInteger t2;
-        BigInteger t2_p;
         BigInteger c1;
         BigInteger c2;
-        BigInteger c2_p;
         BigInteger s1;
         BigInteger s1_p;
         BigInteger s2;
@@ -370,26 +368,24 @@ public class IndiffElection extends Election {
                 s1 = nizkp3[i][j][2];
                 s1_p = nizkp3[i][j][3];
                 s2 = nizkp3[i][j][4];
-                s2_p = nizkp3[i][j][5];
-                T = nizkp3[i][j][6];
+                T = nizkp3[i][j][5];
 
                 BigInteger Q = b_prod_min;
                 BigInteger P = y_prod_min;
 
                 t1 = g0.modPow(s1,p).multiply(Q.modPow(s1_p,p)).mod(p).multiply(T.modPow(c1,p).modInverse(p)).mod(p);
-                t1_p = g0.modPow(s1,p).multiply(P.modPow(s1_p,p)).mod(p);
-                t2 = g0.modPow(s2,p).multiply(b[i][j].multiply(g1.modInverse(p)).modPow(c2,p).modInverse(p)).mod(p);
-                t2_p = g0.modPow(s2,p).multiply(b[j][i].multiply(g1.modInverse(p)).modPow(c2,p).modInverse(p)).mod(p);
+                t1_p = g1.modPow(s1,p).multiply(P.modPow(s1_p,p)).mod(p);
+                t2 = (b[i][j].multiply(b[j][i]).mod(p)).multiply((g1.modPow(BigInteger.valueOf(2),p)).modInverse(p)).modPow(c2,p).multiply(g0.modPow(s2,p)).mod(p);
 
 
-                BigInteger[] arr = {g0,g1,Q,P,T,BigInteger.ONE,t1,t1_p,t2,t2_p};
-                h = c1.add(c2).mod(q);
+                BigInteger[] arr = {g0,g1,Q,P,T,BigInteger.ONE,t1,t1_p,t2};
+                h = c1.add(c2).mod(p.subtract(BigInteger.ONE));
 
                 if (T.compareTo(BigInteger.ONE) == 0) {
                     hold = false;
                 }
 
-                if (h.compareTo(BallotEncryptor.hash(arr).mod(q)) != 0) {
+                if (h.compareTo(BallotEncryptor.hash(arr).mod(p.subtract(BigInteger.ONE))) != 0) {
                     hold = false;
                 }
             }
@@ -399,9 +395,7 @@ public class IndiffElection extends Election {
 
     }
 
-    // TODO: change votes to be the pair format of candidates and relations
-    // then convert the pair format to a matrix
-    // convert a vote given as a permutation to a pairwise comparison matrix
+    // convert a vote to a pairwise comparison matrix permitting indifference
     public int[][] convertToMatrix(int[][] vote) {
 
         ArrayList<Integer> seen = new ArrayList<Integer>();
