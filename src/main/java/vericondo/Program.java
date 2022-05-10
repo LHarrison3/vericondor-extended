@@ -1,6 +1,7 @@
 package vericondo;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.math.BigInteger;
 
 public class Program {
@@ -81,9 +82,11 @@ public class Program {
         */
 
         int num_candidates = 5;
+
         IndiffElection election = new IndiffElection("Sample Election", "05/05/22", num_candidates, 112);
-        int[][] ranking = {{0,2},{1,3,4}};
-        int[][] vote = election.convertToMatrix(ranking);
+        //int[][] ranking = {{0,2},{1,3,4}};
+        //int[][] vote = election.convertToMatrix(ranking);
+        /*
         System.out.println(Arrays.deepToString(vote));
 
         election.addBallot(vote, false);
@@ -91,7 +94,40 @@ public class Program {
         election.finaliseBallot(0, Type.AUDITED);
 
         System.out.println(election.verifyElection());
+        */
+
+        int n = num_candidates;
+        ArrayList<Integer> sizes = new ArrayList<Integer>();
+        while (n > 0) {
+            int next = ThreadLocalRandom.current().nextInt(1,n+1);
+            sizes.add(next);
+            n = n - next;
+        }
+
+        System.out.println(sizes.toString());
+
+        int[][] vote_array = new int[sizes.size()][];
+        for (int j = 0; j < sizes.size(); j++) {
+            vote_array[j] = new int[sizes.get(j)];
+        }
+
+        Stack<Integer> perm = new Stack<Integer>();
+        for (int j = 0; j < num_candidates; j++) {
+            perm.push(j);
+        }
+        Collections.shuffle(perm);
+
+        for (int j = 0; j < vote_array.length; j++) {
+            for (int k = 0; k < vote_array[j].length; k++) {
+                vote_array[j][k] = perm.pop();
+            }
+        }
+
+        System.out.println(Arrays.deepToString(vote_array));
+        int[][] vote = election.convertToMatrix(vote_array);
+        System.out.println(Arrays.deepToString(vote));
 
     }
+
 
 }

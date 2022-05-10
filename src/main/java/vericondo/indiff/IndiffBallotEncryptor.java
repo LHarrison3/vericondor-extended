@@ -431,6 +431,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                     s1 = r_alpha.add(phi.multiply(c1).mod(p.subtract(BigInteger.ONE))).mod(p.subtract(BigInteger.ONE));
                     s1_p = r_alpha_p.add(psi.multiply(c1).mod(p.subtract(BigInteger.ONE))).mod(p.subtract(BigInteger.ONE));
                     s2 = r_beta_p;
+                    
                 } else {
 
                     T = g1.modPow(r,p);
