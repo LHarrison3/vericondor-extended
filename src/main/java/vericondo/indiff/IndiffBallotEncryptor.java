@@ -218,12 +218,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
 
             BigInteger v_il_sum = rowSumAt(v, i);
 
-            for (int j = 0; j < num_candidates; j++) {
-                // this property doesn't make sense for comparions between the same candidate
-                // so we just skip it for the NIZKP between the same candidate
-                if (i == j) {
-                    continue;
-                }
+            for (int j = 0; j < i; j++) {
 
                 BigInteger y_jl_prod = rowProductAt(y, j);
                 BigInteger b_jl_prod = rowProductAt(b, j);
@@ -235,10 +230,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                 y_prod_min = y_il_prod.multiply(y_jl_prod.modInverse(p)).mod(p);
                 b_prod_min = b_il_prod.multiply(b_jl_prod.modInverse(p)).mod(p);
 
-                //System.out.println("y_prod_min is: " + y_prod_min.toString());
-
                 x_sum_min = x_il_sum.subtract(x_jl_sum).mod(p.subtract(BigInteger.ONE));
-                //System.out.println("x_sum_min is: " + x_sum_min.toString());
 
                 v_sum_min = v_il_sum.subtract(v_jl_sum).mod(p.subtract(BigInteger.ONE));
 
@@ -298,11 +290,6 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                     r3 = s.subtract(c3.multiply(x[i][j])).mod(p.subtract(BigInteger.ONE));
                     r3_p = s_p.subtract(c3_p.multiply(x[j][i])).mod(p.subtract(BigInteger.ONE));
                 } else {
-                    //System.out.println("generated for (" + i + "," + j + ")");
-                    //System.out.println("v_sum_min is: " + v_sum_min.toString());
-                    //System.out.println("a is: " + x_sum_min.toString());
-                    //System.out.println("this should be true: " + (b_prod_min.compareTo(g0.modPow(x_sum_min,p)) == 0));
-                    //System.out.println("this should also be true: " + (y_prod_min.compareTo(g1.modPow(x_sum_min.mod(p.subtract(BigInteger.ONE)),p)) == 0));
                     t1 = g0.modPow(s,p);
                     t1_p = g1.modPow(s_p,p);
                     t2 = b[i][j].modPow(w_a,p).multiply(g0.modPow(u_a,p)).mod(p);
@@ -323,7 +310,6 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                     r2_p = u_a_p;
                     r3 = u_b;
                     r3_p = u_b_p;
-                    //System.out.println("t1_p should be: " + t1_p.toString().substring(0,4));
                 }
 
                 nizkp2[i][j][0] = c1;
@@ -387,11 +373,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
             BigInteger x_il_sum = rowSumAt(x, i);
             BigInteger v_il_sum = rowSumAt(v, i);
 
-            for (int j = 0; j < num_candidates; j++) {
-
-                if (i == j) {
-                    continue;
-                }
+            for (int j = 0; j < i; j++) {
 
                 BigInteger y_jl_prod = rowProductAt(y, j);
                 BigInteger b_jl_prod = rowProductAt(b, j);
@@ -431,7 +413,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                     s1 = r_alpha.add(phi.multiply(c1).mod(p.subtract(BigInteger.ONE))).mod(p.subtract(BigInteger.ONE));
                     s1_p = r_alpha_p.add(psi.multiply(c1).mod(p.subtract(BigInteger.ONE))).mod(p.subtract(BigInteger.ONE));
                     s2 = r_beta_p;
-                    
+
                 } else {
 
                     T = g1.modPow(r,p);
