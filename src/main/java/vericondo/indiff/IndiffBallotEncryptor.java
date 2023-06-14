@@ -10,6 +10,7 @@ This class creates ballots from votes.
 */
 public class IndiffBallotEncryptor extends BallotEncryptor {
 
+    // TODO: change this code to work with the new protocol for indifference
 
     // sets up a new encryptor
     public IndiffBallotEncryptor(int num_candidates, BigInteger g0, BigInteger g1,
@@ -36,41 +37,62 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
         return x;
     }
 
-    public IndiffBallot makeBallot(int voter, int[][] vote) {
+    public IndiffBallot makeBallot(int voter, int[][] vote, int[][] vote_indiff) {
 
         BigInteger[][] b = new BigInteger[num_candidates][num_candidates];
         BigInteger[][] y = new BigInteger[num_candidates][num_candidates];
 
+        BigInteger[][] b_indiff = new BigInteger[num_candidates][num_candidates];
+        BigInteger[][] y_indiff = new BigInteger[num_candidates][num_candidates];
+
+
         BigInteger[][] x = generateRandomness();
+        BigInteger[][] x_indiff = generateRandomness();
 
         for (int i = 0; i < num_candidates; i++) {
             for (int j = 0; j < num_candidates; j++) {
                 if (i == j) {
                     b[i][j] = BigInteger.ONE;
                     y[i][j] = BigInteger.ONE;
+                    b_indiff[i][j] = BigInteger.ONE;
+                    y_indiff[i][j] = BigInteger.ONE;
                 } else {
                     b[i][j] = g0.modPow(x[i][j], p).multiply(g1.modPow(BigInteger.valueOf(vote[i][j]), p)).mod(p);
                     y[i][j] = g1.modPow(x[i][j], p);
+                    b_indiff[i][j] = g0.modPow(x_indiff[i][j], p).multiply(g1.modPow(BigInteger.valueOf(vote_indiff[i][j]), p)).mod(p);
+                    y_indiff[i][j] = g1.modPow(x_indiff[i][j], p);
                 }
             }
         }
 
         // initialise arrays to hold each conjunction of the NIZKP Pwf
-        // there's five conjunctions and each nizkp has a different size
+        // there's eight conjunctions and each nizkp has a different size
 
-        // y(i,j) = g1^x(i,j)
+        // y_a(i,j) = g1^x_a(i,j)
         BigInteger[][][] nizkp0 = genNIZKP0(voter, x, y);
 
-        // b(i,j) = g0^x(i,j) || b(i,j) / g0 = g0^x(i,j)
-        BigInteger[][][] nizkp1 = genNIZKP1(voter, vote, x, b);
+        // y_b(i,j) = g1^x_b(i,j)
+        BigInteger[][][] nizkp1 = genNIZKP1(voter, x_indiff, y_indiff);
 
-        // row sums equal + entries different
-        BigInteger[][][] nizkp2 = genNIZKP2(voter, vote, x, b, y);
+        // b_a(i,j) = g0^x_a(i,j) || b_a(i,j) / g1 = g0^x_a(i,j)
+        BigInteger[][][] nizkp2 = genNIZKP2(voter, vote, x, b);
 
-        // row sums different + entries equal
-        BigInteger[][][] nizkp3 = genNIZKP3(voter, vote, x, b, y);
+        // (b_a(i,j) =  g0^x_a(i,j) && b_a(j,i) / g1 = g0^x_a(j,i)) || (b_a(i,j) / g1 =  g0^x_a(i,j) && b_a(j,i) = g0^x_a(j,i))
+        BigInteger[][][] nizkp3 = genNIZKP3(voter, vote, x, b);
 
-        return new IndiffBallot(voter, vote, b, y, x, nizkp0, nizkp1, nizkp2, nizkp3);
+        // b_a_prod(i) = g_0^(x_a_sum(i) + j)
+        BigInteger[][] nizkp4 = genNIZKP4(voter, vote, x, b);
+
+        // b_b(i,j) = g0^x_b(i,j) || b_b(i,j) / g1 = g0^x_b(i,j) 
+        BigInteger[][][] nizkp5 = genNIZKP5(voter, vote_indiff, x_indiff, b_indiff);
+
+        // b_a(i,j) = g0^x_a(i,j) || b_b(i,j) = g0^x_b(i,j)
+        BigInteger[][][] nizkp6 = genNIZKP6(voter, vote, x, b, vote_indiff, x_indiff, b_indiff);
+
+        // b_b(i,j) = g0^x_b(i,j) || (k != i != j) : b_a(i,k) * b_b(i,k) = b_a(j,k) * b_b(i,k)
+        BigInteger[][][][] nizkp7 = genNIZKP7(voter, vote, x, b, vote_indiff, x_indiff, b_indiff);
+
+        return new IndiffBallot(voter, vote, vote_indiff, b, y, x, b_indiff, y_indiff, x_indiff, nizkp0, nizkp1, nizkp2, nizkp3, nizkp4, nizkp5, nizkp6, nizkp7);
     }
 
     // helper function to generate NIZKP for the first conjunction
@@ -80,6 +102,27 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
 
         BigInteger[][][] nizkp0 = new BigInteger[num_candidates][num_candidates][2];
 
+        BigInteger r;
+        BigInteger t;
+        BigInteger c;
+        BigInteger s;
+
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                r = genRandom(limit);
+                t = g1.modPow(r, p);
+                BigInteger[] arr = {BigInteger.valueOf(voter), g1, y[i][j], t};
+                c = hash(arr);
+                s = r.add(c.multiply(x[i][j])).mod(p.subtract(BigInteger.ONE));
+                nizkp0[i][j][0] = t;
+                nizkp0[i][j][1] = s;
+            }
+
+        }
+
+        return nizkp0;
+
+        /*
         BigInteger w;
         BigInteger t;
         BigInteger c;
@@ -98,10 +141,15 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
 
         return nizkp0;
 
+        */
     }
 
     // helper function to generate NIZKP for the second conjunction
-    private BigInteger[][][] genNIZKP1(int voter, int[][] vote, BigInteger[][] x, BigInteger[][] b) {
+    private BigInteger[][][] genNIZKP1(int voter, BigInteger[][] x_indiff, BigInteger[][] y_indiff) {
+
+        return (new BigInteger[num_candidates][num_candidates][77]);
+
+        /*
 
         BigInteger limit = q.subtract(BigInteger.ONE);
 
@@ -157,12 +205,18 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
 
         return nizkp1;
 
+    */
+
     }
 
     // helper function to generate NIZKP for the third conjunction
     // TODO: rewrite triple disjunctive proof here
     private BigInteger[][][] genNIZKP2(int voter, int[][] vote, BigInteger[][] x,
-        BigInteger[][] b, BigInteger[][] y) {
+        BigInteger[][] b) {
+
+        return (new BigInteger[num_candidates][num_candidates][77]);
+
+        /*
 
         BigInteger limit = q.subtract(BigInteger.ONE);
 
@@ -327,10 +381,17 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
             }
         }
         return nizkp2;
+
+        */
+
     }
 
     private BigInteger[][][] genNIZKP3(int voter, int[][] vote, BigInteger[][] x,
-        BigInteger[][] b, BigInteger[][] y) {
+        BigInteger[][] b) {
+
+        return (new BigInteger[num_candidates][num_candidates][77]);
+
+        /*
 
         BigInteger limit = q.subtract(BigInteger.ONE);
         BigInteger[][][] nizkp3 = new BigInteger[num_candidates][num_candidates][8];
@@ -443,6 +504,38 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
         }
 
         return nizkp3;
+
+        */
+
+    }
+
+    private BigInteger[][] genNIZKP4(int voter, int[][] vote, BigInteger[][] x, 
+        BigInteger[][] b) {
+
+        return (new BigInteger[num_candidates][77]);
+
+    }
+
+    private BigInteger[][][] genNIZKP5(int voter, int[][] vote, BigInteger[][] x_indiff, 
+        BigInteger[][] b_indiff) {
+
+        return (new BigInteger[num_candidates][num_candidates][77]);
+
+    }
+
+    private BigInteger[][][] genNIZKP6(int voter, int[][] vote, BigInteger[][] x, 
+        BigInteger[][] b, int[][] vote_indiff, BigInteger[][] x_indiff, 
+        BigInteger[][] b_indiff) {
+
+        return (new BigInteger[num_candidates][num_candidates][77]);
+
+    }
+
+    private BigInteger[][][][] genNIZKP7(int voter, int[][] vote, BigInteger[][] x, 
+        BigInteger[][] b, int[][] vote_indiff, BigInteger[][] x_indiff,
+        BigInteger[][] b_indiff) {
+
+        return (new BigInteger[num_candidates][num_candidates][num_candidates - 2][77]);
 
     }
 

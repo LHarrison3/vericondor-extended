@@ -12,13 +12,21 @@ public class AuditedIndiffReceipt extends IndiffReceipt {
     private final int[][] vote;
     private final Type type;
 
-    public AuditedIndiffReceipt(int voter_id, BigInteger[][] b, BigInteger[][] y,
-        BigInteger[][][] nizkp0, BigInteger[][][] nizkp1, BigInteger[][][] nizkp2,
-        BigInteger[][][] nizkp3, int[][] vote, BigInteger[][] x) {
+    private final BigInteger[][] x_indiff;
+    private final int[][] vote_indiff;
 
-            super(voter_id, b, y, nizkp0, nizkp1, nizkp2, nizkp3);
+    public AuditedIndiffReceipt(int voter_id, BigInteger[][] b, BigInteger[][] y,
+        BigInteger[][] b_indiff, BigInteger[][] y_indiff, BigInteger[][][] nizkp0, 
+        BigInteger[][][] nizkp1, BigInteger[][][] nizkp2, BigInteger[][][] nizkp3, 
+        BigInteger[][] nizkp4, BigInteger[][][] nizkp5, BigInteger[][][] nizkp6,
+        BigInteger[][][][] nizkp7, int[][] vote, BigInteger[][] x, int[][] vote_indiff,
+        BigInteger[][] x_indiff) {
+
+            super(voter_id, b, y, b_indiff, y_indiff, nizkp0, nizkp1, nizkp2, nizkp3, nizkp4, nizkp5, nizkp6, nizkp7);
             this.x = x;
             this.vote = vote;
+            this.x_indiff = x_indiff;
+            this.vote_indiff = vote_indiff;
             this.type = Type.AUDITED;
     }
 
@@ -30,12 +38,25 @@ public class AuditedIndiffReceipt extends IndiffReceipt {
         return this.vote;
     }
 
+    public BigInteger[][] x_indiff() {
+        return this.x_indiff;
+    }
+
+    public int[][] vote_indiff() {
+        return this.vote_indiff;
+    }
+
     private void superDisplay() {
         super.display();
     }
 
     @Override
     public void display() {
+
+        // TODO: change the display method once NIZKP generation is coded in
+        System.out.println("WIP");
+
+        /*
         superDisplay();
         System.out.println("VOTE");
         System.out.println("----------------------------------------------------");
@@ -61,6 +82,7 @@ public class AuditedIndiffReceipt extends IndiffReceipt {
             System.out.println("");
         }
         System.out.println("----------------------------------------------------");
+        */
     }
 
 }

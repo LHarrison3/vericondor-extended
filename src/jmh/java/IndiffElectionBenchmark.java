@@ -20,6 +20,8 @@ import org.openjdk.jmh.annotations.Setup;
 
 public class IndiffElectionBenchmark {
 
+    // TODO: change to work with indifferences
+
     @State(Scope.Benchmark)
     public static class ElectionState {
 
@@ -80,7 +82,7 @@ public class IndiffElectionBenchmark {
                 }
 
                 votes[i] = election.convertToMatrix(vote_array);
-                election.addBallot(votes[i], false);
+                election.addBallot(votes[i], new int[num_candidates][num_candidates], false);
 
             }
 
@@ -104,7 +106,7 @@ public class IndiffElectionBenchmark {
 
         IndiffElection e = state.election;
 
-        int voter = e.addBallot(state.votes[0], false);
+        int voter = e.addBallot(state.votes[0], new int[state.num_candidates][state.num_candidates], false);
         blackhole.consume(voter);
     }
 

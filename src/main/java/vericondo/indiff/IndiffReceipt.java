@@ -12,23 +12,44 @@ public class IndiffReceipt extends Receipt {
     private final BigInteger[][][] nizkp1;
     private final BigInteger[][][] nizkp2;
     private final BigInteger[][][] nizkp3;
+    private final BigInteger[][] nizkp4;
+    private final BigInteger[][][] nizkp5;
+    private final BigInteger[][][] nizkp6;
+    private final BigInteger[][][][] nizkp7;
 
-    public IndiffReceipt(int voter_id, BigInteger[][] b, BigInteger[][] y,
-        BigInteger[][][] nizkp0, BigInteger[][][] nizkp1, BigInteger[][][] nizkp2,
-        BigInteger[][][] nizkp3) {
+    // additional ballot contents for indifferences
+    protected final BigInteger[][] b_indiff;
+    protected final BigInteger[][] y_indiff;
+
+    public IndiffReceipt(int voter_id, BigInteger[][] b, BigInteger[][] y, 
+        BigInteger[][] b_indiff, BigInteger[][] y_indiff, BigInteger[][][] nizkp0, 
+        BigInteger[][][] nizkp1, BigInteger[][][] nizkp2, BigInteger[][][] nizkp3,
+        BigInteger[][] nizkp4, BigInteger[][][] nizkp5, BigInteger[][][] nizkp6,
+        BigInteger[][][][] nizkp7) {
 
         super(voter_id, b, y);
+
+        this.b_indiff = b_indiff;
+        this.y_indiff = y_indiff;
 
         this.nizkp0 = nizkp0;
         this.nizkp1 = nizkp1;
         this.nizkp2 = nizkp2;
         this.nizkp3 = nizkp3;
+        this.nizkp4 = nizkp4;
+        this.nizkp5 = nizkp5;
+        this.nizkp6 = nizkp6;
+        this.nizkp7 = nizkp7;
     }
 
     // output the receipt to the screen
     @Override
     public void display() {
 
+        // TODO: change the display method once NIZKP generation is coded in
+        System.out.println("WIP");
+
+        /*
         super.display();
 
         System.out.println("----------------------------------------------------");
@@ -119,7 +140,15 @@ public class IndiffReceipt extends Receipt {
             System.out.println("");
         }
         System.out.println("----------------------------------------------------");
+        */
+    }
 
+    public BigInteger[][] b_indiff() {
+        return this.b_indiff;
+    }
+
+    public BigInteger[][] y_indiff() {
+        return this.y_indiff;
     }
 
     public BigInteger[][][] getNIZKP0() {
@@ -136,6 +165,22 @@ public class IndiffReceipt extends Receipt {
 
     public BigInteger[][][] getNIZKP3() {
         return this.nizkp3;
+    }
+
+    public BigInteger[][] getNIZKP4() {
+        return this.nizkp4;
+    }
+
+    public BigInteger[][][] getNIZKP5() {
+        return this.nizkp5;
+    }
+
+    public BigInteger[][][] getNIZKP6() {
+        return this.nizkp6;
+    }
+
+    public BigInteger[][][][] getNIZKP7() {
+        return this.nizkp7;
     }
 
 }

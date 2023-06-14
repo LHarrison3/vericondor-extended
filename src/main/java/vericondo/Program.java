@@ -89,11 +89,13 @@ public class Program {
 
         System.out.println(Arrays.deepToString(vote));
 
-        election.addBallot(vote, false);
+        election.addBallot(vote, new int[num_candidates][num_candidates], false);
 
         election.finaliseBallot(0, Type.AUDITED);
 
-        System.out.println(election.verifyElection());
+        System.out.println(election.verifyNIZKPSforReceipt(election.getBulletinBoard().getReceipt(0)));
+
+        //System.out.println(election.verifyElection());
 
         /*
         int n = num_candidates;

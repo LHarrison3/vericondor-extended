@@ -7,6 +7,8 @@ import java.security.NoSuchAlgorithmException;
 
 public class IndiffElection extends Election {
 
+    // TODO: change this code to work with the new protocol for indifference
+
     // mapping of voters to ballots
     private HashMap<Integer, IndiffBallot> ballots;
 
@@ -49,17 +51,19 @@ public class IndiffElection extends Election {
     }
 
     // add a ballot to the election
-    public int addBallot(int[][] vote, boolean displayPartialReceipt) {
+    public int addBallot(int[][] vote, int[][] vote_indiff, boolean displayPartialReceipt) {
 
         // make the ballot with its associated NIZKPs
-        IndiffBallot ballot = this.encryptor.makeBallot(num_voters, vote);
+        IndiffBallot ballot = this.encryptor.makeBallot(num_voters, vote, vote_indiff);
 
         // add the ballot to the list
         ballots.put(num_voters, ballot);
 
         // create a partial receipt for the ballot
-        IndiffReceipt receipt = new IndiffReceipt(num_voters, ballot.b(), ballot.y(), ballot.getNIZKP0(),
-            ballot.getNIZKP1(), ballot.getNIZKP2(), ballot.getNIZKP3());
+        IndiffReceipt receipt = new IndiffReceipt(num_voters, ballot.b(), ballot.y(), ballot.b_indiff(),
+            ballot.y_indiff(), ballot.getNIZKP0(), ballot.getNIZKP1(), ballot.getNIZKP2(), ballot.getNIZKP3(),
+            ballot.getNIZKP4(), ballot.getNIZKP5(), ballot.getNIZKP6(), ballot.getNIZKP7());
+        
         // add it to the BB
         bb.addReceipt(num_voters, receipt);
         // and display it to the screen if the flag is set
@@ -93,16 +97,19 @@ public class IndiffElection extends Election {
         if (type == Type.AUDITED) {
 
             AuditedIndiffReceipt final_receipt = new AuditedIndiffReceipt(voter, ballot.b(), ballot.y(),
-                ballot.getNIZKP0(), ballot.getNIZKP1(), ballot.getNIZKP2(), ballot.getNIZKP3(),
-                ballot.vote(), ballot.x());
+                ballot.b_indiff(), ballot.y_indiff(), ballot.getNIZKP0(), ballot.getNIZKP1(), 
+                ballot.getNIZKP2(), ballot.getNIZKP3(), ballot.getNIZKP4(), ballot.getNIZKP5(), 
+                ballot.getNIZKP6(), ballot.getNIZKP7(), ballot.vote(), ballot.x(), ballot.vote_indiff(),
+                ballot.x_indiff());
 
             bb.addReceipt(voter, final_receipt);
 
         } else {
 
             ConfirmedIndiffReceipt final_receipt = new ConfirmedIndiffReceipt(voter, ballot.b(),
-                ballot.y(), ballot.getNIZKP0(), ballot.getNIZKP1(), ballot.getNIZKP2(),
-                ballot.getNIZKP3());
+                ballot.y(), ballot.b_indiff(), ballot.y_indiff(), ballot.getNIZKP0(), ballot.getNIZKP1(), 
+                ballot.getNIZKP2(), ballot.getNIZKP3(), ballot.getNIZKP4(), ballot.getNIZKP5(),
+                ballot.getNIZKP6(), ballot.getNIZKP7());
 
             bb.addReceipt(voter, final_receipt);
             bb.updateTally(ballot.vote());
@@ -162,11 +169,17 @@ public class IndiffElection extends Election {
 
         int voter = receipt.id();
 
+        // TODO: verify all NIZKPs from 0 to 7
+        boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
+        return hold0;
+
+        /*
         boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
         boolean hold1 = verifyNIZKP1(voter, receipt.b(), receipt.getNIZKP1());
         boolean hold2 = verifyNIZKP2(voter, receipt.b(), receipt.y(), receipt.getNIZKP2());
         boolean hold3 = verifyNIZKP3(voter, receipt.b(), receipt.y(), receipt.getNIZKP3());
         return (hold0 && hold1 && hold2 && hold3);
+        */
 
     }
 
@@ -189,6 +202,28 @@ public class IndiffElection extends Election {
     private boolean verifyNIZKP0(int voter, BigInteger[][] y, BigInteger[][][] nizkp0) {
 
         boolean hold = true;
+        BigInteger t;
+        BigInteger s;
+        BigInteger c;
+        BigInteger left;
+        BigInteger right;
+
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                t = nizkp0[i][j][0];
+                s = nizkp0[i][j][1];
+                BigInteger[] arr = {BigInteger.valueOf(voter), g1, y[i][j], t};
+                c = BallotEncryptor.hash(arr);
+                left = g1.modPow(s,p);
+                right = y[i][j].modPow(c,p).multiply(t).mod(p);
+                if (left.compareTo(right) != 0) {
+                    hold = false;
+                }
+            }
+        }
+
+        /*
+        boolean hold = true;
 
         BigInteger t1;
         BigInteger c1;
@@ -206,6 +241,7 @@ public class IndiffElection extends Election {
                 }
             }
         }
+        */
 
         return hold;
     }
@@ -214,6 +250,9 @@ public class IndiffElection extends Election {
     // helper function to verify NIZKP for second conjunction
     private boolean verifyNIZKP1(int voter, BigInteger[][] b, BigInteger[][][] nizkp1) {
 
+        return false;
+
+        /*
         boolean hold = true;
 
         BigInteger t1;
@@ -240,12 +279,15 @@ public class IndiffElection extends Election {
         }
 
         return hold;
+        */
 
     }
 
     // helper function to verify NIZKP for third conjunction
     private boolean verifyNIZKP2(int voter, BigInteger[][] b, BigInteger[][] y, BigInteger[][][] nizkp2) {
 
+        return false;
+        /*
         boolean hold = true;
 
         BigInteger t1;
@@ -315,12 +357,16 @@ public class IndiffElection extends Election {
         }
 
         return hold;
+        */
 
     }
 
     // helper function to verify NIZKP for final conjunction
     private boolean verifyNIZKP3(int voter, BigInteger[][] b, BigInteger[][] y, BigInteger[][][] nizkp3) {
 
+        return false;
+
+        /*
         boolean hold = true;
 
         BigInteger t1;
@@ -378,7 +424,23 @@ public class IndiffElection extends Election {
         }
 
         return hold;
+        */
+    }
 
+    private boolean verifyNIZKP4() {
+        return false;
+    }
+
+    private boolean verifyNIZKP5() {
+        return false;
+    }
+
+    private boolean verifyNIZKP6() {
+        return false;
+    }
+
+    private boolean verifyNIZKP7() {
+        return false;
     }
 
     // convert a vote to a pairwise comparison matrix permitting indifference
