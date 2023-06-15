@@ -171,7 +171,10 @@ public class IndiffElection extends Election {
 
         // TODO: verify all NIZKPs from 0 to 7
         boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
-        return hold0;
+        boolean hold1 = verifyNIZKP1(voter, receipt.y_indiff(), receipt.getNIZKP1());
+        boolean hold2 = verifyNIZKP2(voter, receipt.b(), receipt.getNIZKP2());
+        boolean hold3 = verifyNIZKP3(voter, receipt.b(), receipt.getNIZKP3());
+        return hold2;
 
         /*
         boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
@@ -202,20 +205,15 @@ public class IndiffElection extends Election {
     private boolean verifyNIZKP0(int voter, BigInteger[][] y, BigInteger[][][] nizkp0) {
 
         boolean hold = true;
-        BigInteger t;
-        BigInteger s;
-        BigInteger c;
-        BigInteger left;
-        BigInteger right;
 
         for (int i = 0; i < num_candidates; i++) {
             for (int j = 0; j < num_candidates; j++) {
-                t = nizkp0[i][j][0];
-                s = nizkp0[i][j][1];
+                BigInteger t = nizkp0[i][j][0];
+                BigInteger s = nizkp0[i][j][1];
                 BigInteger[] arr = {BigInteger.valueOf(voter), g1, y[i][j], t};
-                c = BallotEncryptor.hash(arr);
-                left = g1.modPow(s,p);
-                right = y[i][j].modPow(c,p).multiply(t).mod(p);
+                BigInteger c = BallotEncryptor.hash(arr);
+                BigInteger left = g1.modPow(s,p);
+                BigInteger right = y[i][j].modPow(c,p).multiply(t).mod(p);
                 if (left.compareTo(right) != 0) {
                     hold = false;
                 }
@@ -248,9 +246,9 @@ public class IndiffElection extends Election {
 
 
     // helper function to verify NIZKP for second conjunction
-    private boolean verifyNIZKP1(int voter, BigInteger[][] b, BigInteger[][][] nizkp1) {
+    private boolean verifyNIZKP1(int voter, BigInteger[][] y, BigInteger[][][] nizkp1) {
 
-        return false;
+        return verifyNIZKP0(voter, y, nizkp1);
 
         /*
         boolean hold = true;
@@ -284,147 +282,73 @@ public class IndiffElection extends Election {
     }
 
     // helper function to verify NIZKP for third conjunction
-    private boolean verifyNIZKP2(int voter, BigInteger[][] b, BigInteger[][] y, BigInteger[][][] nizkp2) {
+    private boolean verifyNIZKP2(int voter, BigInteger[][] b, BigInteger[][][] nizkp2) {
 
-        return false;
-        /*
         boolean hold = true;
 
-        BigInteger t1;
-        BigInteger t1_p;
-        BigInteger t2;
-        BigInteger t2_p;
-        BigInteger t3;
-        BigInteger t3_p;
-        BigInteger c1;
-        BigInteger c1_p;
-        BigInteger c2;
-        BigInteger c2_p;
-        BigInteger c3;
-        BigInteger c3_p;
-        BigInteger r1;
-        BigInteger r1_p;
-        BigInteger r2;
-        BigInteger r2_p;
-        BigInteger r3;
-        BigInteger r3_p;
-        BigInteger y_prod_min;
-        BigInteger b_prod_min;
-        BigInteger h1;
-        BigInteger h2;
         for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                BigInteger t0 = nizkp2[i][j][0];
+                BigInteger t1 = nizkp2[i][j][1];
+                BigInteger s0 = nizkp2[i][j][2];
+                BigInteger s1 = nizkp2[i][j][3];
+                BigInteger cl = nizkp2[i][j][4];
+                BigInteger cr = nizkp2[i][j][5];
 
-            BigInteger y_il_prod = encryptor.rowProductAt(y, i);
-            BigInteger b_il_prod = encryptor.rowProductAt(b, i);
-
-            for (int j = 0; j < i; j++) {
-
-                BigInteger y_jl_prod = encryptor.rowProductAt(y, j);
-                BigInteger b_jl_prod = encryptor.rowProductAt(b, j);
-
-                y_prod_min = y_il_prod.multiply(y_jl_prod.modInverse(p)).mod(p);
-                b_prod_min = b_il_prod.multiply(b_jl_prod.modInverse(p)).mod(p);
-
-                c1 = nizkp2[i][j][0];
-                c1_p = nizkp2[i][j][1];
-                c2 = nizkp2[i][j][2];
-                c2_p = nizkp2[i][j][3];
-                c3 = nizkp2[i][j][4];
-                c3_p = nizkp2[i][j][5];
-                r1 = nizkp2[i][j][6];
-                r1_p = nizkp2[i][j][7];
-                r2 = nizkp2[i][j][8];
-                r2_p = nizkp2[i][j][9];
-                r3 = nizkp2[i][j][10];
-                r3_p = nizkp2[i][j][11];
-
-                t1 = b_prod_min.modPow(c1,p).multiply(g0.modPow(r1,p)).mod(p);
-                t1_p = y_prod_min.modPow(c1_p,p).multiply(g1.modPow(r1_p,p)).mod(p);
-                t2 = b[i][j].modPow(c2,p).multiply(g0.modPow(r2,p)).mod(p);
-                t2_p = (b[j][i].multiply(g1.modInverse(p)).mod(p)).modPow(c2_p,p).multiply(g0.modPow(r2_p,p)).mod(p);
-                t3 = (b[i][j].multiply(g1.modInverse(p)).mod(p)).modPow(c3,p).multiply(g0.modPow(r3,p)).mod(p);
-                t3_p = b[j][i].modPow(c3_p,p).multiply(g0.modPow(r3_p,p)).mod(p);
-
-                BigInteger[] arr = {g0, g1, b_prod_min, y_prod_min, b[i][j], b[j][i], t1, t1_p, t2, t2_p, t3, t3_p};
-
-                h1 = c1.add(c2).add(c3).mod(p.subtract(BigInteger.ONE));
-                h2 = c1_p.add(c2_p).add(c3_p).mod(p.subtract(BigInteger.ONE));
-
-                if (h1.compareTo(BallotEncryptor.hash(arr)) != 0 || h2.compareTo(BallotEncryptor.hash(arr)) != 0) {
+                BigInteger left0 = g0.modPow(s0,p);
+                BigInteger right0 = b[i][j].modPow(cl,p).multiply(t0).mod(p);
+                BigInteger left1 = g0.modPow(s1,p);
+                BigInteger right1 = b[i][j].multiply(g1.modInverse(p)).mod(p).modPow(cr,p).multiply(t1).mod(p);
+                if (left0.compareTo(right0) != 0 || left1.compareTo(right1) != 0) {
                     hold = false;
                 }
             }
-        }
+        } 
 
         return hold;
-        */
 
     }
 
     // helper function to verify NIZKP for final conjunction
-    private boolean verifyNIZKP3(int voter, BigInteger[][] b, BigInteger[][] y, BigInteger[][][] nizkp3) {
+    private boolean verifyNIZKP3(int voter, BigInteger[][] b, BigInteger[][][] nizkp3) {
 
-        return false;
-
-        /*
         boolean hold = true;
-
-        BigInteger t1;
-        BigInteger t1_p;
-        BigInteger t2;
-        BigInteger c1;
-        BigInteger c2;
-        BigInteger s1;
-        BigInteger s1_p;
-        BigInteger s2;
-        BigInteger s2_p;
-        BigInteger T;
-        BigInteger y_prod_min;
-        BigInteger b_prod_min;
-        BigInteger h;
+        
         for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
 
-            BigInteger y_il_prod = encryptor.rowProductAt(y, i);
-            BigInteger b_il_prod = encryptor.rowProductAt(b, i);
-
-            for (int j = 0; j < i; j++) {
-
-                BigInteger y_jl_prod = encryptor.rowProductAt(y, j);
-                BigInteger b_jl_prod = encryptor.rowProductAt(b, j);
-
-                y_prod_min = y_il_prod.multiply(y_jl_prod.modInverse(p)).mod(p);
-                b_prod_min = b_il_prod.multiply(b_jl_prod.modInverse(p)).mod(p);
-
-                c1 = nizkp3[i][j][0];
-                c2 = nizkp3[i][j][1];
-                s1 = nizkp3[i][j][2];
-                s1_p = nizkp3[i][j][3];
-                s2 = nizkp3[i][j][4];
-                T = nizkp3[i][j][5];
-
-                BigInteger Q = b_prod_min;
-                BigInteger P = y_prod_min;
-
-                t1 = g0.modPow(s1,p).multiply(Q.modPow(s1_p,p)).mod(p).multiply(T.modPow(c1,p).modInverse(p)).mod(p);
-                t1_p = g1.modPow(s1,p).multiply(P.modPow(s1_p,p)).mod(p);
-                t2 = (b[i][j].multiply(b[j][i]).mod(p)).multiply((g1.modPow(BigInteger.valueOf(2),p)).modInverse(p)).modPow(c2,p).multiply(g0.modPow(s2,p)).mod(p);
-
-
-                BigInteger[] arr = {g0,g1,Q,P,T,BigInteger.ONE,t1,t1_p,t2};
-                h = c1.add(c2).mod(p.subtract(BigInteger.ONE));
-
-                if (T.compareTo(BigInteger.ONE) == 0) {
-                    hold = false;
+                if (i == j) {
+                    continue;
                 }
 
-                if (h.compareTo(BallotEncryptor.hash(arr).mod(p.subtract(BigInteger.ONE))) != 0) {
+                BigInteger t0 = nizkp3[i][j][0];
+                BigInteger t0_p = nizkp3[i][j][1];
+                BigInteger t1 = nizkp3[i][j][2];
+                BigInteger t1_p = nizkp3[i][j][3];
+                BigInteger s0 = nizkp3[i][j][4];
+                BigInteger s0_p = nizkp3[i][j][5];
+                BigInteger s1 = nizkp3[i][j][6];
+                BigInteger s1_p = nizkp3[i][j][7];
+                BigInteger cl = nizkp3[i][j][8];
+                BigInteger cr = nizkp3[i][j][9];
+
+                BigInteger left0 = g0.modPow(s0,p);
+                BigInteger right0 = b[i][j].modPow(cl,p).multiply(t0).mod(p);
+                BigInteger left0_p = g0.modPow(s0_p,p);
+                BigInteger right0_p = b[j][i].multiply(g1.modInverse(p)).mod(p).modPow(cl,p).multiply(t0_p).mod(p);
+                BigInteger left1 = g0.modPow(s1,p);
+                BigInteger right1 = b[i][j].multiply(g1.modInverse(p)).mod(p).modPow(cr,p).multiply(t1).mod(p);
+                BigInteger left1_p = g0.modPow(s1_p,p);
+                BigInteger right1_p = b[j][i].modPow(cr,p).multiply(t1_p).mod(p);
+
+                if (left0.compareTo(right0) != 0 || left0_p.compareTo(right0_p) != 0 || left1.compareTo(right1) != 0 || left1_p.compareTo(right1_p) != 0) {
                     hold = false;
                 }
             }
         }
 
         return hold;
-        */
+
     }
 
     private boolean verifyNIZKP4() {
