@@ -174,7 +174,8 @@ public class IndiffElection extends Election {
         boolean hold1 = verifyNIZKP1(voter, receipt.y_indiff(), receipt.getNIZKP1());
         boolean hold2 = verifyNIZKP2(voter, receipt.b(), receipt.getNIZKP2());
         boolean hold3 = verifyNIZKP3(voter, receipt.b(), receipt.getNIZKP3());
-        return hold2;
+        boolean hold4 = verifyNIZKP4(voter, receipt.b(), receipt.getNIZKP4());
+        return hold3;
 
         /*
         boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
@@ -341,7 +342,7 @@ public class IndiffElection extends Election {
                 BigInteger left1_p = g0.modPow(s1_p,p);
                 BigInteger right1_p = b[j][i].modPow(cr,p).multiply(t1_p).mod(p);
 
-                if (left0.compareTo(right0) != 0 || left0_p.compareTo(right0_p) != 0 || left1.compareTo(right1) != 0 || left1_p.compareTo(right1_p) != 0) {
+                if (left0.compareTo(right0) != 0 || left0_p.compareTo(right0_p) != 0  || left1.compareTo(right1) != 0 || left1_p.compareTo(right1_p) != 0) {
                     hold = false;
                 }
             }
@@ -351,8 +352,46 @@ public class IndiffElection extends Election {
 
     }
 
-    private boolean verifyNIZKP4() {
-        return false;
+    private boolean verifyNIZKP4(int voter, BigInteger[][] b, BigInteger[][] nizkp4) {
+
+        BigInteger[] b_ps = this.encryptor.computeRowProducts(b);
+
+        boolean hold = true;
+
+        BigInteger r;
+        BigInteger l;
+        BigInteger c;
+        BigInteger c_grand;
+        BigInteger[] t = new BigInteger[num_candidates];
+
+        BigInteger[] arr = new BigInteger[2 + 2*num_candidates];
+        for (int j = 0; j < num_candidates; j++) {
+            BigInteger c_sum = BigInteger.ZERO;
+            for (int i = 0; i < num_candidates; i++) {
+                c = nizkp4[j][i];
+                r = nizkp4[j][i+num_candidates];
+                l = g0.modPow(r,p);
+                t[i] = g0.modPow(r,p).multiply(b_ps[i].multiply(g1.modInverse(p).modPow(BigInteger.valueOf(j),p)).modPow(c,p).mod(p)).mod(p);
+                c_sum = c_sum.add(c).mod(q);
+            }
+
+            arr[0] = BigInteger.valueOf(voter);
+            arr[1] = BigInteger.valueOf(j);
+            for (int i = 0; i < num_candidates; i++) {
+                arr[i+2] = b_ps[i];
+            }
+            for (int i = 0; i < num_candidates; i++) {
+                arr[i+2+num_candidates] = t[i];
+            }
+
+            c_grand = BallotEncryptor.hash(arr).mod(q);
+            if (c_sum.mod(q).compareTo(c_grand) != 0) {
+                hold = false;
+            }
+
+        }
+
+        return hold;
     }
 
     private boolean verifyNIZKP5() {

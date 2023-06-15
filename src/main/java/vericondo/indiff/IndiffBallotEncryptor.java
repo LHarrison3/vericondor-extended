@@ -257,7 +257,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                     s1 = genRandom(limit);
                     s1_p = genRandom(limit);
                     t1 = b[i][j].multiply(g1.modInverse(p)).mod(p).modPow(cr, p).modInverse(p).multiply(g0.modPow(s1,p)).mod(p);
-                    t1_p = b[j][i].modPow(cr,p).modInverse(p).multiply(g0.modPow(s1,p)).mod(p);
+                    t1_p = b[j][i].modPow(cr,p).modInverse(p).multiply(g0.modPow(s1_p,p)).mod(p);
                     BigInteger[] arr = {g0, b[i][j], b[i][j].multiply(g1.modInverse(p)).mod(p), b[j][i], b[j][i].multiply(g1.modInverse(p)).mod(p), t0, t0_p, t1, t1_p};
                     c = hash(arr).mod(q);
                     cl = c.subtract(cr).mod(q);
@@ -275,12 +275,12 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                     s0 = genRandom(limit);
                     s0_p = genRandom(limit);
                     t0 = b[i][j].modPow(cl,p).modInverse(p).multiply(g0.modPow(s0,p)).mod(p);
-                    t0_p = b[j][i].multiply(g1.modInverse(p)).mod(p).modPow(cl,p).modInverse(p).multiply(g0.modPow(s0,p)).mod(p);
+                    t0_p = b[j][i].multiply(g1.modInverse(p)).mod(p).modPow(cl,p).modInverse(p).multiply(g0.modPow(s0_p,p)).mod(p);
                     BigInteger[] arr = {g0, b[i][j], b[i][j].multiply(g1.modInverse(p)).mod(p), b[j][i], b[j][i].multiply(g1.modInverse(p)).mod(p), t0, t0_p, t1, t1_p};
                     c = hash(arr).mod(q);
                     cr = c.subtract(cl).mod(q);
-                    s1 = r.add(x[i][j].multiply(cl).mod(q)).mod(q);
-                    s1_p = r_p.add(x[j][i].multiply(cl).mod(q)).mod(q);
+                    s1 = r.add(x[i][j].multiply(cr).mod(q)).mod(q);
+                    s1_p = r_p.add(x[j][i].multiply(cr).mod(q)).mod(q);
 
                 }
 
@@ -308,7 +308,77 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
     private BigInteger[][] genNIZKP4(int voter, int[][] vote, BigInteger[][] x, 
         BigInteger[][] b) {
 
-        return (new BigInteger[num_candidates][77]);
+        BigInteger limit = q.subtract(BigInteger.ONE);
+
+        BigInteger[][] nizkp4 = new BigInteger[num_candidates][num_candidates * 2];
+
+        int index = 0;
+
+        // compute needed row sums and row products
+        BigInteger[][] vote_big = new BigInteger[num_candidates][num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                vote_big[i][j] = BigInteger.valueOf(vote[i][j]);
+            }
+
+        }
+
+        BigInteger[] x_rs = computeRowSums(x);
+        BigInteger[] vote_rs = computeRowSums(vote_big);
+        BigInteger[] b_ps = computeRowProducts(b);
+
+        BigInteger u = BigInteger.ZERO;
+        BigInteger[] r = new BigInteger[num_candidates];
+        BigInteger[] t = new BigInteger[num_candidates];
+        BigInteger[] c = new BigInteger[num_candidates];
+        BigInteger[] arr = new BigInteger[2 + 2*num_candidates];
+        BigInteger c_grand;
+        for (int j = 0; j < num_candidates; j++) {
+
+            arr[0] = BigInteger.valueOf(voter);
+            arr[1] = BigInteger.valueOf(j);
+            BigInteger c_sum = BigInteger.ZERO;
+
+            for (int i = 0; i < num_candidates; i++) {
+
+                // check if this disjunction is the true one
+                if (BigInteger.valueOf(j).compareTo(vote_rs[i]) == 0) {
+                    u = genRandom(limit);
+                    t[i] = g0.modPow(u, p);
+                } else {
+                    r[i] = genRandom(limit);
+                    c[i] = genRandom(limit);
+                    t[i] = g0.modPow(r[i],p).multiply(b_ps[i].multiply(g1.modInverse(p).modPow(BigInteger.valueOf(j),p)).modPow(c[i],p).mod(p)).mod(p);
+                }
+
+                arr[i+2] = b_ps[i];
+                arr[i+2+num_candidates] = t[i];
+
+            }
+
+            c_grand = hash(arr).mod(q);
+
+            for (int i = 0; i < num_candidates; i++) {
+                if (BigInteger.valueOf(j).compareTo(vote_rs[i]) == 0) {
+                    continue;
+                }
+                c_sum = c_sum.add(c[i]).mod(q);
+            }
+
+            for (int i = 0; i < num_candidates; i++) {
+                if (BigInteger.valueOf(j).compareTo(vote_rs[i]) == 0) {
+                    nizkp4[j][i] = c_grand.subtract(c_sum).mod(q);
+                    nizkp4[j][i+num_candidates] = u.subtract(nizkp4[j][i].multiply(x_rs[i])).mod(q);
+                } else {
+                    nizkp4[j][i] = c[i];
+                    nizkp4[j][i+num_candidates] = r[i];
+                }
+
+            }
+
+        }
+
+        return nizkp4;
 
     }
 
@@ -335,24 +405,41 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
 
     }
 
-    // helper function to compute specific row product
-    public BigInteger rowProductAt(BigInteger[][] m, int i) {
-        BigInteger r = BigInteger.ONE;
-        for (int l = 0; l < num_candidates; l++) {
-            r = r.multiply(m[i][l]);
+    // helper function to compute row products
+    public BigInteger[] computeRowProducts(BigInteger[][] m) {
+        BigInteger[] r = new BigInteger[num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = m[i][0];
         }
-        r = r.mod(p);
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 1; j < num_candidates; j++) {
+                r[i] = r[i].multiply(m[i][j]);
+            }
+        }
+        // we are working under modulus p
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = r[i].mod(p);
+        }
         return r;
     }
 
-    // helper function to compute specific row sum
-    public BigInteger rowSumAt(BigInteger[][] m, int i) {
-        BigInteger r = BigInteger.ZERO;
-        for (int l = 0; l < num_candidates; l++) {
-            r = r.add(m[i][l]);
+    // helper function to compute row sums
+    protected BigInteger[] computeRowSums(BigInteger[][] m) {
+        BigInteger[] r = new BigInteger[num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = m[i][0];
         }
-        r = r.mod(p.subtract(BigInteger.ONE));
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 1; j < num_candidates; j++) {
+                r[i] = r[i].add(m[i][j]);
+            }
+        }
+        // we are working under modulus p
+        for (int i = 0; i < num_candidates; i++) {
+            r[i] = r[i].mod(p);
+        }
         return r;
     }
+
 
 }
