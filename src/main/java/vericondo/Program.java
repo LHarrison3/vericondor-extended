@@ -81,16 +81,18 @@ public class Program {
         System.out.println(election.verifyElection());
         */
 
-        int num_candidates = 5;
+        int num_candidates = 8;
 
         IndiffElection election = new IndiffElection("Sample Election", "05/05/22", num_candidates, 112);
-        int[][] ranking = {{0},{2},{1},{3},{4}};
+        int[][] ranking =  {{0,2},{1},{4,3},{6,5,7}}; //{{0},{2},{1},{3},{4}};
 
-        int[][] vote = election.convertToMatrix(ranking);
+        IndiffVote vote = election.convertToMatrix(ranking);
 
-        System.out.println(Arrays.deepToString(vote));
+        //System.out.println(vote.toString());
+        System.out.println(Arrays.deepToString(vote.getPreferences()));
+        System.out.println(Arrays.deepToString(vote.getIndifferences()));
 
-        election.addBallot(vote, new int[num_candidates][num_candidates], false);
+        election.addBallot(vote.getPreferences(), vote.getIndifferences(), false);
 
         election.finaliseBallot(0, Type.AUDITED);
 

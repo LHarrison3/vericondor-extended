@@ -175,7 +175,9 @@ public class IndiffElection extends Election {
         boolean hold2 = verifyNIZKP2(voter, receipt.b(), receipt.getNIZKP2());
         boolean hold3 = verifyNIZKP3(voter, receipt.b(), receipt.getNIZKP3());
         boolean hold4 = verifyNIZKP4(voter, receipt.b(), receipt.getNIZKP4());
-        return hold3;
+        boolean hold5 = verifyNIZKP5(voter, receipt.b_indiff(), receipt.getNIZKP5());
+        boolean hold6 = verifyNIZKP6(voter, receipt.b(), receipt.b_indiff(), receipt.getNIZKP6());
+        return hold6;
 
         /*
         boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
@@ -221,27 +223,6 @@ public class IndiffElection extends Election {
             }
         }
 
-        /*
-        boolean hold = true;
-
-        BigInteger t1;
-        BigInteger c1;
-        BigInteger c;
-        BigInteger r;
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                c = nizkp0[i][j][0];
-                r = nizkp0[i][j][1];
-                t1 = g1.modPow(r,p).multiply(y[i][j].modPow(c,p)).mod(p);
-                BigInteger[] arr = {BigInteger.valueOf(voter), g1, y[i][j], t1};
-                c1 = BallotEncryptor.hash(arr);
-                if (c.compareTo(c1) != 0) {
-                    hold = false;
-                }
-            }
-        }
-        */
-
         return hold;
     }
 
@@ -249,36 +230,8 @@ public class IndiffElection extends Election {
     // helper function to verify NIZKP for second conjunction
     private boolean verifyNIZKP1(int voter, BigInteger[][] y, BigInteger[][][] nizkp1) {
 
+        // the verification is the same as the first conjunction
         return verifyNIZKP0(voter, y, nizkp1);
-
-        /*
-        boolean hold = true;
-
-        BigInteger t1;
-        BigInteger t2;
-        BigInteger c1;
-        BigInteger c2;
-        BigInteger r1;
-        BigInteger r2;
-        BigInteger h;
-        for (int i = 0; i < num_candidates; i++) {
-            for (int j = 0; j < num_candidates; j++) {
-                c1 = nizkp1[i][j][0];
-                c2 = nizkp1[i][j][1];
-                r1 = nizkp1[i][j][2];
-                r2 = nizkp1[i][j][3];
-                t1 = g0.modPow(r1,p).multiply(b[i][j].modPow(c1,p)).mod(p);
-                t2 = g0.modPow(r2,p).multiply(b[i][j].multiply(g1.modInverse(p)).mod(p).modPow(c2,p)).mod(p);
-                BigInteger[] arr = {g0, g1, BigInteger.valueOf(voter), b[i][j], t1, t2};
-                h = c1.add(c2).mod(q);
-                if (h.compareTo(BallotEncryptor.hash(arr).mod(q)) != 0) {
-                    hold = false;
-                }
-            }
-        }
-
-        return hold;
-        */
 
     }
 
@@ -310,7 +263,7 @@ public class IndiffElection extends Election {
 
     }
 
-    // helper function to verify NIZKP for final conjunction
+    // helper function to verify NIZKP for fourth conjunction
     private boolean verifyNIZKP3(int voter, BigInteger[][] b, BigInteger[][][] nizkp3) {
 
         boolean hold = true;
@@ -352,6 +305,7 @@ public class IndiffElection extends Election {
 
     }
 
+    // helper function to verify NIZKP for fifth conjunction
     private boolean verifyNIZKP4(int voter, BigInteger[][] b, BigInteger[][] nizkp4) {
 
         BigInteger[] b_ps = this.encryptor.computeRowProducts(b);
@@ -392,23 +346,109 @@ public class IndiffElection extends Election {
         }
 
         return hold;
+
     }
 
-    private boolean verifyNIZKP5() {
-        return false;
+    // helper function to verify NIZKP for sixth conjunction
+    private boolean verifyNIZKP5(int voter, BigInteger[][] b_indiff, BigInteger[][][] nizkp5) {
+
+        // the verification is the same as the third conjunction
+        return verifyNIZKP2(voter, b_indiff, nizkp5);
+
     }
 
-    private boolean verifyNIZKP6() {
-        return false;
+    // helper function to verify NIZKP for seventh conjunction
+    private boolean verifyNIZKP6(int voter, BigInteger[][] b, BigInteger[][] b_indiff, 
+        BigInteger[][][] nizkp6) {
+
+        boolean hold = true;
+
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                BigInteger t0 = nizkp6[i][j][0];
+                BigInteger t1 = nizkp6[i][j][1];
+                BigInteger s0 = nizkp6[i][j][2];
+                BigInteger s1 = nizkp6[i][j][3];
+                BigInteger cl = nizkp6[i][j][4];
+                BigInteger cr = nizkp6[i][j][5];
+
+                BigInteger left0 = g0.modPow(s0,p);
+                BigInteger right0 = b[i][j].modPow(cl,p).multiply(t0).mod(p);
+                BigInteger left1 = g0.modPow(s1,p);
+                BigInteger right1 = b_indiff[i][j].modPow(cr,p).multiply(t1).mod(p);
+                if (left0.compareTo(right0) != 0 || left1.compareTo(right1) != 0) {
+                    hold = false;
+                }
+            }
+        } 
+
+        return hold;
+
     }
 
+    // helper function to verify NIZKP for final conjunction
     private boolean verifyNIZKP7() {
         return false;
     }
 
     // convert a vote to a pairwise comparison matrix permitting indifference
-    public int[][] convertToMatrix(int[][] vote) {
+    public IndiffVote convertToMatrix(int[][] vote) {
 
+        // first we flatten the vote to strict preferences only
+        int[] flat = new int[num_candidates];
+        int index = 0;
+        for (int i = 0; i < vote.length; i++) {
+            for (int j = 0; j < vote[i].length; j++) {
+                flat[index] = vote[i][j];
+                index++;
+            }
+        }
+
+        // then we convert the flattened vote to a matrix of strict preferences 
+        ArrayList<Integer> seen = new ArrayList<Integer>();
+        int[][] preferences = new int[num_candidates][num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            int candidate = flat[i];
+            for (int j = 0; j < num_candidates; j++) {
+                if (!seen.contains(j)) {
+                    preferences[candidate][j] = 1;
+                    preferences[j][candidate] = 0;
+                }
+            }
+            seen.add(candidate);
+        }
+
+        // finally we produce the indifference matrix
+        // two candidates are indifferent if they appear in the same group in the linear vote
+        int[][] indifferences = new int[num_candidates][num_candidates];
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                if (i == j || preferences[i][j] == 1) {
+                    continue;
+                }
+                for (int k = 0; k < vote.length; k++) {
+                    int[] group = vote[k];
+                    boolean seen_first = false;
+                    boolean seen_second = false;
+                    for (int l = 0; l < group.length; l++) {
+                        if (group[l] == i) {
+                            seen_first = true;
+                        }
+                        if (group[l] == j) {
+                            seen_second = true;
+                        }
+                    }
+                    if (seen_first && seen_second) {
+                        indifferences[i][j] = 1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return new IndiffVote(preferences, indifferences);
+
+        /*
         ArrayList<Integer> seen = new ArrayList<Integer>();
 
         int[][] matrix = new int[num_candidates][num_candidates];
@@ -440,6 +480,8 @@ public class IndiffElection extends Election {
             }
         }
         return matrix;
+    }
+    */
     }
 
 }

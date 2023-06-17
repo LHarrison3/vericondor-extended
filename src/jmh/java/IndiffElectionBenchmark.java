@@ -81,7 +81,7 @@ public class IndiffElectionBenchmark {
                     }
                 }
 
-                votes[i] = election.convertToMatrix(vote_array);
+                votes[i] = election.convertToMatrix(vote_array).getPreferences(); // TODO: change this to also include the indifferences and not just strict preferences
                 election.addBallot(votes[i], new int[num_candidates][num_candidates], false);
 
             }
