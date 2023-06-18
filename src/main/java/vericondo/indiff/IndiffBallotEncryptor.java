@@ -10,8 +10,6 @@ This class creates ballots from votes.
 */
 public class IndiffBallotEncryptor extends BallotEncryptor {
 
-    // TODO: change this code to work with the new protocol for indifference
-
     // sets up a new encryptor
     public IndiffBallotEncryptor(int num_candidates, BigInteger g0, BigInteger g1,
         BigInteger p, BigInteger q) {
@@ -445,7 +443,163 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
         BigInteger[][] b, int[][] vote_indiff, BigInteger[][] x_indiff,
         BigInteger[][] b_indiff) {
 
-        return (new BigInteger[num_candidates][num_candidates][num_candidates - 2][77]);
+        BigInteger limit = q.subtract(BigInteger.ONE);
+
+        BigInteger[][][][] nizkp7 = new BigInteger[num_candidates][num_candidates][num_candidates][13];
+
+        BigInteger r;
+        BigInteger r_p;
+
+        BigInteger t0;
+        BigInteger t0_p;
+        BigInteger t1;
+        BigInteger t1_p;
+        BigInteger t2;
+
+        BigInteger s0;
+        BigInteger s0_p;
+        BigInteger s1;
+        BigInteger s1_p;
+        BigInteger s2;
+        BigInteger cf = BigInteger.ZERO;
+
+        BigInteger cl;
+        BigInteger cr;
+        BigInteger c;
+
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                // we have three disjunctive branches to consider for the final NIZKP
+                // the first branch concerns whether we have a 0 entry in the indifference matrix at (i,j)
+                if (vote_indiff[i][j] == 0) {
+
+                    r = genRandom(limit);
+                    t2 = g0.modPow(r,p);
+
+                    // we fake the proofs for the other two branches (which are parameterised over all k s.t. k != i != j)
+                    for (int k = 0; k < num_candidates; k++) {
+                        if (k == i || k == j) {
+                            continue;
+                        }
+
+                        cl = genRandom(limit);
+                        cr = genRandom(limit);
+                        s0 = genRandom(limit);
+                        s0_p = genRandom(limit);
+                        s1 = genRandom(limit);
+                        s1_p = genRandom(limit);
+
+                        t0 = b[i][k].multiply(b_indiff[i][k]).mod(p).modPow(cr,p).modInverse(p).multiply(g0.modPow(s0,p)).mod(p);
+                        t0_p = b[j][k].multiply(b_indiff[j][k]).mod(p).modPow(cr,p).modInverse(p).multiply(g0.modPow(s0_p,p)).mod(p);
+                        t1 = b[i][k].multiply(b_indiff[i][k]).mod(p).multiply(g1.modInverse(p)).mod(p).modPow(cl,p).modInverse(p).multiply(g0.modPow(s1,p)).mod(p);
+                        t1_p = b[j][k].multiply(b_indiff[j][k]).mod(p).multiply(g1.modInverse(p)).mod(p).modPow(cl,p).modInverse(p).multiply(g0.modPow(s1_p,p)).mod(p);
+
+                        BigInteger[] arr = {g0, b[i][k].multiply(b_indiff[i][k]).mod(p), b[j][k].multiply(b_indiff[j][k]).mod(p), t0, t0_p, t1, t1_p, t2};
+                        c = hash(arr);
+
+                        cf = c.subtract(cl).mod(q).subtract(cr).mod(q);
+                        s2 = r.add(x_indiff[i][j].multiply(cf).mod(q)).mod(q);
+
+                        nizkp7[i][j][k][0] = t0;
+                        nizkp7[i][j][k][1] = t0_p;
+                        nizkp7[i][j][k][2] = t1;
+                        nizkp7[i][j][k][3] = t1_p;
+                        nizkp7[i][j][k][4] = t2;
+                        nizkp7[i][j][k][5] = s0;
+                        nizkp7[i][j][k][6] = s0_p;
+                        nizkp7[i][j][k][7] = s1;
+                        nizkp7[i][j][k][8] = s1_p;
+                        nizkp7[i][j][k][9] = s2;
+                        nizkp7[i][j][k][10] = cf;
+                        nizkp7[i][j][k][11] = cl;
+                        nizkp7[i][j][k][12] = cr;
+
+                    }
+
+                // if the first branch does not hold, we need to determine which of the remaining two branches hold over all k != i != j
+                } else {
+                
+                    cf = genRandom(limit);
+                    s2 = genRandom(limit);
+                    t2 = b_indiff[i][j].modPow(cf,p).modInverse(p).multiply(g0.modPow(s2,p)).mod(p);
+
+                    for (int k = 0; k < num_candidates; k++) {
+                        if (k == i || k == j) {
+                            continue;
+                        }
+
+                        r = genRandom(limit);
+                        r_p = genRandom(limit);
+
+                        // the second branch concerns whether v[i][k] + v_indiff[i][k] == v[j][k] + v_indiff[j][k] == 1
+                        if (vote[i][k] + vote_indiff[i][k] == 1 && vote[j][k] + vote_indiff[j][k] == 1) {
+
+                            t1 = g0.modPow(r,p);
+                            t1_p = g0.modPow(r_p,p);
+
+                            cr = genRandom(limit);
+                            s0 = genRandom(limit);
+                            s0_p = genRandom(limit);
+
+                            t0 = b[i][k].multiply(b_indiff[i][k]).mod(p).modPow(cr,p).modInverse(p).multiply(g0.modPow(s0,p)).mod(p);
+                            t0_p = b[j][k].multiply(b_indiff[j][k]).mod(p).modPow(cr,p).modInverse(p).multiply(g0.modPow(s0_p,p)).mod(p);
+
+                            BigInteger[] arr = {g0, b[i][k].multiply(b_indiff[i][k]).mod(p), b[j][k].multiply(b_indiff[j][k]).mod(p), t0, t0_p, t1, t1_p, t2};
+                            c = hash(arr);
+
+                            cl = c.subtract(cr).mod(q).subtract(cf).mod(q);
+                            s1 = r.add(x[i][k].add(x_indiff[i][k]).mod(q).multiply(cl).mod(q)).mod(q);
+                            s1_p = r_p.add(x[j][k].add(x_indiff[j][k]).mod(q).multiply(cl).mod(q)).mod(q);
+
+                        // the final branch must be that v[i][k] + v_indiff[i][k] == v[j][k] + v_indiff[j][k] == 0
+                        } else {
+
+                            t0 = g0.modPow(r,p);
+                            t0_p = g0.modPow(r_p,p);
+
+                            cl = genRandom(limit);
+                            s1 = genRandom(limit);
+                            s1_p = genRandom(limit);
+
+                            t1 = b[i][k].multiply(b_indiff[i][k]).mod(p).multiply(g1.modInverse(p)).mod(p).modPow(cl,p).modInverse(p).multiply(g0.modPow(s1,p)).mod(p);
+                            t1_p = b[j][k].multiply(b_indiff[j][k]).mod(p).multiply(g1.modInverse(p)).mod(p).modPow(cl,p).modInverse(p).multiply(g0.modPow(s1_p,p)).mod(p);
+
+                            BigInteger[] arr = {g0, b[i][k].multiply(b_indiff[i][k]).mod(p), b[j][k].multiply(b_indiff[j][k]).mod(p), t0, t0_p, t1, t1_p, t2};
+                            c = hash(arr);
+
+                            cr = c.subtract(cl).mod(q).subtract(cf).mod(q);
+                            s0 = r.add(x[i][k].add(x_indiff[i][k]).mod(q).multiply(cr).mod(q)).mod(q);
+                            s0_p = r_p.add(x[j][k].add(x_indiff[j][k]).mod(q).multiply(cr).mod(q)).mod(q);
+
+                        }
+
+                        nizkp7[i][j][k][0] = t0;
+                        nizkp7[i][j][k][1] = t0_p;
+                        nizkp7[i][j][k][2] = t1;
+                        nizkp7[i][j][k][3] = t1_p;
+                        nizkp7[i][j][k][4] = t2;
+                        nizkp7[i][j][k][5] = s0;
+                        nizkp7[i][j][k][6] = s0_p;
+                        nizkp7[i][j][k][7] = s1;
+                        nizkp7[i][j][k][8] = s1_p;
+                        nizkp7[i][j][k][9] = s2;
+                        nizkp7[i][j][k][10] = cf;
+                        nizkp7[i][j][k][11] = cl;
+                        nizkp7[i][j][k][12] = cr;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        return nizkp7;
 
     }
 

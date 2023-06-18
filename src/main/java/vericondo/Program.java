@@ -85,6 +85,7 @@ public class Program {
 
         IndiffElection election = new IndiffElection("Sample Election", "05/05/22", num_candidates, 112);
         int[][] ranking =  {{0,2},{1},{4,3},{6,5,7}}; //{{0},{2},{1},{3},{4}};
+        //int[][] ranking = {{0},{2},{1},{4},{3},{6},{5},{7}};
 
         IndiffVote vote = election.convertToMatrix(ranking);
 

@@ -169,7 +169,6 @@ public class IndiffElection extends Election {
 
         int voter = receipt.id();
 
-        // TODO: verify all NIZKPs from 0 to 7
         boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
         boolean hold1 = verifyNIZKP1(voter, receipt.y_indiff(), receipt.getNIZKP1());
         boolean hold2 = verifyNIZKP2(voter, receipt.b(), receipt.getNIZKP2());
@@ -177,15 +176,8 @@ public class IndiffElection extends Election {
         boolean hold4 = verifyNIZKP4(voter, receipt.b(), receipt.getNIZKP4());
         boolean hold5 = verifyNIZKP5(voter, receipt.b_indiff(), receipt.getNIZKP5());
         boolean hold6 = verifyNIZKP6(voter, receipt.b(), receipt.b_indiff(), receipt.getNIZKP6());
-        return hold6;
-
-        /*
-        boolean hold0 = verifyNIZKP0(voter, receipt.y(), receipt.getNIZKP0());
-        boolean hold1 = verifyNIZKP1(voter, receipt.b(), receipt.getNIZKP1());
-        boolean hold2 = verifyNIZKP2(voter, receipt.b(), receipt.y(), receipt.getNIZKP2());
-        boolean hold3 = verifyNIZKP3(voter, receipt.b(), receipt.y(), receipt.getNIZKP3());
-        return (hold0 && hold1 && hold2 && hold3);
-        */
+        boolean hold7 = verifyNIZKP7(voter, receipt.b(), receipt.b_indiff(), receipt.getNIZKP7());
+        return (hold0 && hold1 && hold2 && hold3 && hold4 && hold5 && hold6 && hold7);
 
     }
 
@@ -387,8 +379,59 @@ public class IndiffElection extends Election {
     }
 
     // helper function to verify NIZKP for final conjunction
-    private boolean verifyNIZKP7() {
-        return false;
+    private boolean verifyNIZKP7(int voter, BigInteger[][] b, BigInteger[][] b_indiff, 
+        BigInteger[][][][] nizkp7) {
+        
+        boolean hold = true;
+
+        for (int i = 0; i < num_candidates; i++) {
+            for (int j = 0; j < num_candidates; j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                for (int k = 0; k < num_candidates; k++) {
+                    if (k == i || k == j) {
+                        continue;
+                    }
+
+                    BigInteger t0 = nizkp7[i][j][k][0];
+                    BigInteger t0_p = nizkp7[i][j][k][1];
+                    BigInteger t1 = nizkp7[i][j][k][2] ;
+                    BigInteger t1_p = nizkp7[i][j][k][3];
+                    BigInteger t2 = nizkp7[i][j][k][4];
+                    BigInteger s0 = nizkp7[i][j][k][5];
+                    BigInteger s0_p = nizkp7[i][j][k][6];
+                    BigInteger s1 = nizkp7[i][j][k][7];
+                    BigInteger s1_p = nizkp7[i][j][k][8];
+                    BigInteger s2 = nizkp7[i][j][k][9];
+                    BigInteger cf = nizkp7[i][j][k][10];
+                    BigInteger cl = nizkp7[i][j][k][11];
+                    BigInteger cr = nizkp7[i][j][k][12];
+
+                    BigInteger left0 = g0.modPow(s0,p);
+                    BigInteger right0 = b[i][k].multiply(b_indiff[i][k]).mod(p).modPow(cr,p).multiply(t0).mod(p);
+                    BigInteger left0_p = g0.modPow(s0_p,p);
+                    BigInteger right0_p = b[j][k].multiply(b_indiff[j][k]).mod(p).modPow(cr,p).multiply(t0_p).mod(p);
+                    BigInteger left1 = g0.modPow(s1,p);
+                    BigInteger right1 = b[i][k].multiply(b_indiff[i][k]).mod(p).multiply(g1.modInverse(p)).mod(p).modPow(cl,p).multiply(t1).mod(p);
+                    BigInteger left1_p = g0.modPow(s1_p,p);
+                    BigInteger right1_p = b[j][k].multiply(b_indiff[j][k]).mod(p).multiply(g1.modInverse(p)).mod(p).modPow(cl,p).multiply(t1_p).mod(p);;
+                    BigInteger left2 = g0.modPow(s2,p);
+                    BigInteger right2 = b_indiff[i][j].modPow(cf,p).multiply(t2).mod(p);
+
+                    if (left0.compareTo(right0) != 0 || left0_p.compareTo(right0_p) != 0 || left1.compareTo(right1) != 0 || left1_p.compareTo(right1_p) != 0 || left2.compareTo(right2) != 0) {
+                        hold = false;
+                    }
+
+                }
+
+            }
+        }
+
+        return hold;
+
+
     }
 
     // convert a vote to a pairwise comparison matrix permitting indifference
@@ -448,40 +491,6 @@ public class IndiffElection extends Election {
 
         return new IndiffVote(preferences, indifferences);
 
-        /*
-        ArrayList<Integer> seen = new ArrayList<Integer>();
-
-        int[][] matrix = new int[num_candidates][num_candidates];
-        for (int i = 0; i < vote.length; i++) {
-            int[] candidates = vote[i];
-            // equal candidates beat themselves
-            for (int j = 0; j < candidates.length; j++) {
-                for (int k = 0; k < candidates.length; k++) {
-                    if (j != k) {
-                        int candidate = candidates[j];
-                        int candidate_other = candidates[k];
-                        matrix[candidate][candidate_other] = 1;
-                        matrix[candidate_other][candidate] = 1;
-                    }
-                }
-            }
-            // record higher ranked candidates
-            for (int j = 0; j < candidates.length; j++) {
-                seen.add(candidates[j]);
-            }
-            // higher ranked candidates beat lower ranked ones
-            for (int c = 0; c < num_candidates; c++) {
-                if (!seen.contains(c)) {
-                    for (int k = 0; k < candidates.length; k++) {
-                        matrix[candidates[k]][c] = 1;
-                        matrix[c][candidates[k]] = 0;
-                    }
-                }
-            }
-        }
-        return matrix;
-    }
-    */
     }
 
 }
