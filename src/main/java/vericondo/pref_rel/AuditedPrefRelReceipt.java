@@ -30,13 +30,9 @@ public class AuditedPrefRelReceipt extends PrefRelReceipt {
         return this.vote;
     }
 
-    private void superDisplay() {
-        super.display();
-    }
-
     @Override
     public void display() {
-        superDisplay();
+        super.display();
         System.out.println("VOTE");
         System.out.println("----------------------------------------------------");
         for (int i = 0; i < vote.length; i++) {

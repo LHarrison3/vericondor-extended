@@ -7,8 +7,6 @@ import java.security.NoSuchAlgorithmException;
 
 public class IndiffElection extends Election {
 
-    // TODO: change this code to work with the new protocol for indifference
-
     // mapping of voters to ballots
     private HashMap<Integer, IndiffBallot> ballots;
 
@@ -112,8 +110,23 @@ public class IndiffElection extends Election {
                 ballot.getNIZKP6(), ballot.getNIZKP7());
 
             bb.addReceipt(voter, final_receipt);
-            bb.updateTally(ballot.vote());
-            bb.updateSum(ballot.x());
+
+            // the tally also includes indifferences here
+            int[][] combined_vote = new int[num_candidates][num_candidates];
+            BigInteger[][] combined_randomness = new BigInteger[num_candidates][num_candidates];
+            int[][] vote = ballot.vote();
+            int[][] vote_indiff = ballot.vote_indiff();
+            BigInteger[][] randomness = ballot.x();
+            BigInteger[][] randomness_indiff = ballot.x_indiff();
+            for (int i = 0; i < num_candidates; i++) {
+                for (int j = 0; j < num_candidates; j++) {
+                    combined_vote[i][j] = vote[i][j] + vote_indiff[i][j];
+                    combined_randomness[i][j] = randomness[i][j].add(randomness_indiff[i][j]).mod(p);
+                }
+            }
+
+            bb.updateTally(combined_vote);
+            bb.updateSum(combined_randomness);
 
         }
 
@@ -137,7 +150,9 @@ public class IndiffElection extends Election {
         BigInteger[][] s = bb.s();
         ArrayList<IndiffReceipt> confirmed_receipts = bb.getConfirmedReceipts();
         BigInteger[][] b;
+        BigInteger[][] b_indiff;
         BigInteger[][] y;
+        BigInteger[][] y_indiff;
         boolean hold = true;
         for (int i = 0; i < num_candidates; i++) {
             for (int j = 0; j < num_candidates; j++) {
@@ -145,9 +160,11 @@ public class IndiffElection extends Election {
                 BigInteger prod1 = BigInteger.ONE;
                 for (int k = 0; k < confirmed_receipts.size(); k++) {
                     b = confirmed_receipts.get(k).b();
+                    b_indiff = confirmed_receipts.get(k).b_indiff();
                     y = confirmed_receipts.get(k).y();
-                    prod0 = prod0.multiply(b[i][j]).mod(p);
-                    prod1 = prod1.multiply(y[i][j]).mod(p);
+                    y_indiff = confirmed_receipts.get(k).y_indiff();
+                    prod0 = prod0.multiply(b[i][j]).mod(p).multiply(b_indiff[i][j]).mod(p);
+                    prod1 = prod1.multiply(y[i][j]).mod(p).multiply(y_indiff[i][j]).mod(p);
                 }
                 prod0 = prod0.mod(p);
                 prod1 = prod1.mod(p);

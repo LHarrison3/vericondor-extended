@@ -45,11 +45,7 @@ public class IndiffReceipt extends Receipt {
     // output the receipt to the screen
     @Override
     public void display() {
-
-        // TODO: change the display method once NIZKP generation is coded in
-        System.out.println("WIP");
-
-        /*
+  
         super.display();
 
         System.out.println("----------------------------------------------------");
@@ -71,13 +67,9 @@ public class IndiffReceipt extends Receipt {
             for (int j = 0; j < b.length; j++) {
                 String element0 = nizkp1[i][j][0].toString();
                 String element1 = nizkp1[i][j][1].toString();
-                String element2 = nizkp1[i][j][2].toString();
-                String element3 = nizkp1[i][j][3].toString();
                 String first0 = element0.substring(0, n_digits);
                 String first1 = element1.substring(0, n_digits);
-                String first2 = element2.substring(0, n_digits);
-                String first3 = element3.substring(0, n_digits);
-                System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + ") ");
+                System.out.print("(" + first0 + "," + first1 + ") ");
             }
             System.out.println("");
         }
@@ -93,25 +85,13 @@ public class IndiffReceipt extends Receipt {
                     String element3 = nizkp2[i][j][3].toString();
                     String element4 = nizkp2[i][j][4].toString();
                     String element5 = nizkp2[i][j][5].toString();
-                    String element6 = nizkp2[i][j][6].toString();
-                    String element7 = nizkp2[i][j][7].toString();
-                    String element8 = nizkp2[i][j][8].toString();
-                    String element9 = nizkp2[i][j][9].toString();
-                    String element10 = nizkp2[i][j][10].toString();
-                    String element11 = nizkp2[i][j][11].toString();
                     String first0 = element0.substring(0, n_digits);
                     String first1 = element1.substring(0, n_digits);
                     String first2 = element2.substring(0, n_digits);
                     String first3 = element3.substring(0, n_digits);
                     String first4 = element4.substring(0, n_digits);
                     String first5 = element5.substring(0, n_digits);
-                    String first6 = element6.substring(0, n_digits);
-                    String first7 = element7.substring(0, n_digits);
-                    String first8 = element8.substring(0, n_digits);
-                    String first9 = element9.substring(0, n_digits);
-                    String first10 = element10.substring(0, n_digits);
-                    String first11 = element11.substring(0, n_digits);
-                    System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + "," + first4 + "," + first5 + "," + first6 + "," + first7 + "," + first8 + "," + first9 + "," + first10 + "," + first11 + ") ");
+                    System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + "," + first4 + "," + first5 + ") ");
                 }
             }
             System.out.println("");
@@ -128,6 +108,51 @@ public class IndiffReceipt extends Receipt {
                     String element3 = nizkp3[i][j][3].toString();
                     String element4 = nizkp3[i][j][4].toString();
                     String element5 = nizkp3[i][j][5].toString();
+                    String element6 = nizkp3[i][j][6].toString();
+                    String element7 = nizkp3[i][j][7].toString();
+                    String element8 = nizkp3[i][j][8].toString();
+                    String element9 = nizkp3[i][j][9].toString();
+                    String first0 = element0.substring(0, n_digits);
+                    String first1 = element1.substring(0, n_digits);
+                    String first2 = element2.substring(0, n_digits);
+                    String first3 = element3.substring(0, n_digits);
+                    String first4 = element4.substring(0, n_digits);
+                    String first5 = element5.substring(0, n_digits);
+                    String first6 = element6.substring(0, n_digits);
+                    String first7 = element7.substring(0, n_digits);
+                    String first8 = element8.substring(0, n_digits);
+                    String first9 = element9.substring(0, n_digits);
+                    System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + "," + first4 + "," + first5 + "," + first6 + "," + first7 + "," + first8 + "," + first9 + ") ");
+                }
+            }
+            System.out.println("");
+        }
+        System.out.println("NIZKP 4:");
+        for (int i = 0; i < b.length; i++) {
+            System.out.print("(");
+            int j = 0;
+            for (j = 0; j < (2*b.length) - 1; j++) {
+
+                String element = nizkp4[i][j].toString();
+                String first = element.substring(0, n_digits);
+                System.out.print(first + ",");
+            }
+            String element = nizkp4[i][j].toString();
+            String first = element.substring(0, n_digits);
+            System.out.println(first + ")");
+        }
+        System.out.println("NIZKP 5:");
+        for (int i = 0; i < b.length; i++) {
+            for (int j = 0; j < b.length; j++) {
+                if (i == j) {
+                    System.out.print("- ");
+                } else {
+                    String element0 = nizkp5[i][j][0].toString();
+                    String element1 = nizkp5[i][j][1].toString();
+                    String element2 = nizkp5[i][j][2].toString();
+                    String element3 = nizkp5[i][j][3].toString();
+                    String element4 = nizkp5[i][j][4].toString();
+                    String element5 = nizkp5[i][j][5].toString();
                     String first0 = element0.substring(0, n_digits);
                     String first1 = element1.substring(0, n_digits);
                     String first2 = element2.substring(0, n_digits);
@@ -139,8 +164,77 @@ public class IndiffReceipt extends Receipt {
             }
             System.out.println("");
         }
+        System.out.println("NIZKP 6:");
+        for (int i = 0; i < b.length; i++) {
+            for (int j = 0; j < b.length; j++) {
+                if (i == j) {
+                    System.out.print("- ");
+                } else {
+                    String element0 = nizkp6[i][j][0].toString();
+                    String element1 = nizkp6[i][j][1].toString();
+                    String element2 = nizkp6[i][j][2].toString();
+                    String element3 = nizkp6[i][j][3].toString();
+                    String element4 = nizkp6[i][j][4].toString();
+                    String element5 = nizkp6[i][j][5].toString();
+                    String first0 = element0.substring(0, n_digits);
+                    String first1 = element1.substring(0, n_digits);
+                    String first2 = element2.substring(0, n_digits);
+                    String first3 = element3.substring(0, n_digits);
+                    String first4 = element4.substring(0, n_digits);
+                    String first5 = element5.substring(0, n_digits);
+                    System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + "," + first4 + "," + first5 + ") ");
+                }
+            }
+            System.out.println("");
+        }
+        System.out.println("NIZKP 7:");
+        for (int i = 0; i < b.length; i++) {
+            for (int j = 0; j < b.length; j++) {
+                if (i == j) {
+                    System.out.print("- ");
+                } else {
+
+                    for (int k = 0; k < b.length; k++) {
+                        if (k == i || k == j) {
+                            System.out.print("- ");
+                        } else {
+                            System.out.print("k=" + k + ": ");
+                            String element0 = nizkp7[i][j][k][0].toString();
+                            String element1 = nizkp7[i][j][k][1].toString();
+                            String element2 = nizkp7[i][j][k][2].toString();
+                            String element3 = nizkp7[i][j][k][3].toString();
+                            String element4 = nizkp7[i][j][k][4].toString();
+                            String element5 = nizkp7[i][j][k][5].toString();
+                            String element6 = nizkp7[i][j][k][6].toString();
+                            String element7 = nizkp7[i][j][k][7].toString();
+                            String element8 = nizkp7[i][j][k][8].toString();
+                            String element9 = nizkp7[i][j][k][9].toString();
+                            String element10 = nizkp7[i][j][k][10].toString();
+                            String element11 = nizkp7[i][j][k][11].toString();
+                            String element12 = nizkp7[i][j][k][12].toString();
+                            String first0 = element0.substring(0, n_digits);
+                            String first1 = element1.substring(0, n_digits);
+                            String first2 = element2.substring(0, n_digits);
+                            String first3 = element3.substring(0, n_digits);
+                            String first4 = element4.substring(0, n_digits);
+                            String first5 = element5.substring(0, n_digits);
+                            String first6 = element6.substring(0, n_digits);
+                            String first7 = element7.substring(0, n_digits);
+                            String first8 = element8.substring(0, n_digits);
+                            String first9 = element9.substring(0, n_digits);
+                            String first10 = element10.substring(0, n_digits);
+                            String first11 = element11.substring(0, n_digits);
+                            String first12 = element12.substring(0, n_digits);
+                            System.out.print("(" + first0 + "," + first1 + "," + first2 + "," + first3 + "," + first4 + "," + first5 + "," + first6 + "," + first7 + "," + first8 + "," + first9 + "," + first10 + "," + first11 + "," + first12 + ") ");
+                        }
+                    } 
+                    System.out.println("");
+                }
+            }
+            System.out.println("");
+        }
         System.out.println("----------------------------------------------------");
-        */
+        
     }
 
     public BigInteger[][] b_indiff() {

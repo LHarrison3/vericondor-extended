@@ -37,7 +37,7 @@ public class IndiffElectionBenchmark {
         public int num_candidates;
 
         // each benchmark gets multiple random votes
-        public int[][][] votes;
+        public IndiffVote[] votes;
 
         // an election so we can use methods from it for easier setup
         public IndiffElection election;
@@ -53,7 +53,7 @@ public class IndiffElectionBenchmark {
             election = new IndiffElection("Benchmarking Election", "10/05/22", num_candidates, bits);
 
             // generate some random votes
-            votes = new int[num_votes][num_candidates][num_candidates];
+            votes = new IndiffVote[num_votes];
             for (int i = 0; i < num_votes; i++) {
 
                 int n = num_candidates;
@@ -81,8 +81,8 @@ public class IndiffElectionBenchmark {
                     }
                 }
 
-                votes[i] = election.convertToMatrix(vote_array).getPreferences(); // TODO: change this to also include the indifferences and not just strict preferences
-                election.addBallot(votes[i], new int[num_candidates][num_candidates], false);
+                votes[i] = election.convertToMatrix(vote_array);
+                election.addBallot(votes[i].getPreferences(), votes[i].getIndifferences(), false);
 
             }
 
@@ -106,7 +106,7 @@ public class IndiffElectionBenchmark {
 
         IndiffElection e = state.election;
 
-        int voter = e.addBallot(state.votes[0], new int[state.num_candidates][state.num_candidates], false);
+        int voter = e.addBallot(state.votes[0].getPreferences(), state.votes[0].getIndifferences(), false);
         blackhole.consume(voter);
     }
 

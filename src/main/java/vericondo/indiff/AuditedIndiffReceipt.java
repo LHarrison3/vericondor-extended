@@ -46,19 +46,11 @@ public class AuditedIndiffReceipt extends IndiffReceipt {
         return this.vote_indiff;
     }
 
-    private void superDisplay() {
-        super.display();
-    }
-
     @Override
     public void display() {
 
-        // TODO: change the display method once NIZKP generation is coded in
-        System.out.println("WIP");
-
-        /*
-        superDisplay();
-        System.out.println("VOTE");
+        super.display();
+        System.out.println("PREFERENCE MATRIX");
         System.out.println("----------------------------------------------------");
         for (int i = 0; i < vote.length; i++) {
             for (int j = 0; j < vote.length; j++) {
@@ -67,7 +59,16 @@ public class AuditedIndiffReceipt extends IndiffReceipt {
             System.out.println("");
         }
         System.out.println("----------------------------------------------------");
-        System.out.println("RANDOMNESS");
+        System.out.println("INDIFFERENCE MATRIX");
+        System.out.println("----------------------------------------------------");
+        for (int i = 0; i < vote_indiff.length; i++) {
+            for (int j = 0; j < vote_indiff.length; j++) {
+                System.out.print(vote_indiff[i][j] + " ");
+            }
+            System.out.println("");
+        }
+        System.out.println("----------------------------------------------------");
+        System.out.println("PREFERENCE RANDOMNESS");
         System.out.println("----------------------------------------------------");
         for (int i = 0; i < x.length; i++) {
             for (int j = 0; j < x.length; j++) {
@@ -82,7 +83,22 @@ public class AuditedIndiffReceipt extends IndiffReceipt {
             System.out.println("");
         }
         System.out.println("----------------------------------------------------");
-        */
+        System.out.println("INDIFFERENCE RANDOMNESS");
+        System.out.println("----------------------------------------------------");
+        for (int i = 0; i < x_indiff.length; i++) {
+            for (int j = 0; j < x_indiff.length; j++) {
+                String element = x_indiff[i][j].toString();
+                if (i == j) {
+                    System.out.print(element + " ");
+                } else {
+                    String first = element.substring(0, n_digits);
+                    System.out.print(first + " ");
+                }
+            }
+            System.out.println("");
+        }
+        System.out.println("----------------------------------------------------");
+        
     }
 
 }
