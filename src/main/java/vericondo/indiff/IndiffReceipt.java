@@ -16,6 +16,8 @@ public class IndiffReceipt extends Receipt {
     private final BigInteger[][][] nizkp5;
     private final BigInteger[][][] nizkp6;
     private final BigInteger[][][][] nizkp7;
+    private final BigInteger[][] nizkp8;
+    private final BigInteger[][] nizkp9;
 
     // additional ballot contents for indifferences
     protected final BigInteger[][] b_indiff;
@@ -25,7 +27,7 @@ public class IndiffReceipt extends Receipt {
         BigInteger[][] b_indiff, BigInteger[][] y_indiff, BigInteger[][][] nizkp0, 
         BigInteger[][][] nizkp1, BigInteger[][][] nizkp2, BigInteger[][][] nizkp3,
         BigInteger[][] nizkp4, BigInteger[][][] nizkp5, BigInteger[][][] nizkp6,
-        BigInteger[][][][] nizkp7) {
+        BigInteger[][][][] nizkp7, BigInteger[][] nizkp8, BigInteger[][] nizkp9) {
 
         super(voter_id, b, y);
 
@@ -40,6 +42,8 @@ public class IndiffReceipt extends Receipt {
         this.nizkp5 = nizkp5;
         this.nizkp6 = nizkp6;
         this.nizkp7 = nizkp7;
+        this.nizkp8 = nizkp8;
+        this.nizkp9 = nizkp9;
     }
 
     // output the receipt to the screen
@@ -233,6 +237,24 @@ public class IndiffReceipt extends Receipt {
             }
             System.out.println("");
         }
+        System.out.println("NIZKP 8:");
+        for (int i = 0; i < b.length; i++) {
+            String element0 = nizkp8[i][0].toString();
+            String element1 = nizkp8[i][1].toString();
+            String first0 = element0.substring(0, n_digits);
+            String first1 = element1.substring(0, n_digits);
+            System.out.print("(" + first0 + "," + first1 + ") ");
+            System.out.println("");
+        }
+        System.out.println("NIZKP 9:");
+        for (int i = 0; i < b.length; i++) {
+            String element0 = nizkp9[i][0].toString();
+            String element1 = nizkp9[i][1].toString();
+            String first0 = element0.substring(0, n_digits);
+            String first1 = element1.substring(0, n_digits);
+            System.out.print("(" + first0 + "," + first1 + ") ");
+            System.out.println("");
+        }
         System.out.println("----------------------------------------------------");
         
     }
@@ -275,6 +297,14 @@ public class IndiffReceipt extends Receipt {
 
     public BigInteger[][][][] getNIZKP7() {
         return this.nizkp7;
+    }
+
+    public BigInteger[][] getNIZKP8() {
+        return this.nizkp8;
+    }
+
+    public BigInteger[][] getNIZKP9() {
+        return this.nizkp9;
     }
 
 }
