@@ -26,19 +26,11 @@ public class IndiffElectionBenchmark {
     public static class ElectionState {
 
         // specified number of candidates for which to run the benchmarks on
-        //@Param({"2","3","4","5","6","7","8","9","10"})
-        //@Param({"2","3","4"})
-        //@Param({"5","6"})
-        //@Param({"7"})
-        //@Param({"8"})
-        //@Param({"9"})
-        @Param({"10"})
+        @Param({"2","3","4","5","6","7","8","9","10"})
         public String candidates_val;
 
         // n-bit security levels
-        //@Param({"112","128"})
-        //@Param("112")
-        @Param({"128"})
+        @Param({"112","128"})
         public String security_bits;
 
         // number of candidates as an integer
@@ -103,14 +95,15 @@ public class IndiffElectionBenchmark {
 
     }
 
-    /*
+    
+    
     // benchmark creation of ballots for a single vote
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Fork(value = 1, warmups = 3)
-    @Measurement(iterations = 5, time = 250, timeUnit = TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 5, time = 250, timeUnit = TimeUnit.MILLISECONDS)
+    @Fork(value = 1, warmups = 5)
+    @Measurement(iterations = 3, time = 250, timeUnit = TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 3, time = 250, timeUnit = TimeUnit.MILLISECONDS)
     public void benchmarkBallotCreation(Blackhole blackhole, ElectionState state) {
 
         IndiffElection e = state.election;
@@ -118,13 +111,13 @@ public class IndiffElectionBenchmark {
         int voter = e.addBallot(state.votes[0].getPreferences(), state.votes[0].getIndifferences(), false);
         blackhole.consume(voter);
     }
-    */
-    /*
+    
+    
     // benchmark verification of tallies on the bulletin board
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Fork(value = 1, warmups = 3)
+    @Fork(value = 1, warmups = 5)
     @Measurement(iterations = 3, time = 250, timeUnit = TimeUnit.MILLISECONDS)
     @Warmup(iterations = 3, time = 250, timeUnit = TimeUnit.MILLISECONDS)
     public void benchmarkTallyVerification(Blackhole blackhole, ElectionState state) {
@@ -135,14 +128,15 @@ public class IndiffElectionBenchmark {
         blackhole.consume(verified);
 
     }
-    */
+    
+    
     // benchmark verification of NIZKPs on the bulletin board for a single ballot
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Fork(value = 1, warmups = 3)
-    @Measurement(iterations = 5, time = 250, timeUnit = TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 5, time = 250, timeUnit = TimeUnit.MILLISECONDS)
+    @Fork(value = 1, warmups = 5)
+    @Measurement(iterations = 3, time = 250, timeUnit = TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 3, time = 250, timeUnit = TimeUnit.MILLISECONDS)
     public void benchmarkNIZKPsVerification(Blackhole blackhole, ElectionState state) {
 
         IndiffElection e = state.election;

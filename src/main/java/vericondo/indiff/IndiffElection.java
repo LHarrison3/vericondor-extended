@@ -60,8 +60,7 @@ public class IndiffElection extends Election {
         // create a partial receipt for the ballot
         IndiffReceipt receipt = new IndiffReceipt(num_voters, ballot.b(), ballot.y(), ballot.b_indiff(),
             ballot.y_indiff(), ballot.getNIZKP0(), ballot.getNIZKP1(), ballot.getNIZKP2(), ballot.getNIZKP3(),
-            ballot.getNIZKP4(), ballot.getNIZKP5(), ballot.getNIZKP6(), ballot.getNIZKP7(), ballot.getNIZKP8(), 
-            ballot.getNIZKP9());
+            ballot.getNIZKP4(), ballot.getNIZKP5(), ballot.getNIZKP6(), ballot.getNIZKP7());
         
         // add it to the BB
         bb.addReceipt(num_voters, receipt);
@@ -96,9 +95,8 @@ public class IndiffElection extends Election {
         if (type == Type.AUDITED) {
 
             AuditedIndiffReceipt final_receipt = new AuditedIndiffReceipt(voter, ballot.b(), ballot.y(),
-                ballot.b_indiff(), ballot.y_indiff(), ballot.getNIZKP0(), ballot.getNIZKP1(), 
-                ballot.getNIZKP2(), ballot.getNIZKP3(), ballot.getNIZKP4(), ballot.getNIZKP5(), 
-                ballot.getNIZKP6(), ballot.getNIZKP7(), ballot.getNIZKP8(), ballot.getNIZKP9(),
+                ballot.b_indiff(), ballot.y_indiff(), ballot.getNIZKP0(), ballot.getNIZKP1(), ballot.getNIZKP2(), 
+                ballot.getNIZKP3(), ballot.getNIZKP4(), ballot.getNIZKP5(), ballot.getNIZKP6(), ballot.getNIZKP7(), 
                 ballot.vote(), ballot.x(), ballot.vote_indiff(), ballot.x_indiff());
 
             bb.addReceipt(voter, final_receipt);
@@ -108,7 +106,7 @@ public class IndiffElection extends Election {
             ConfirmedIndiffReceipt final_receipt = new ConfirmedIndiffReceipt(voter, ballot.b(),
                 ballot.y(), ballot.b_indiff(), ballot.y_indiff(), ballot.getNIZKP0(), ballot.getNIZKP1(), 
                 ballot.getNIZKP2(), ballot.getNIZKP3(), ballot.getNIZKP4(), ballot.getNIZKP5(),
-                ballot.getNIZKP6(), ballot.getNIZKP7(), ballot.getNIZKP8(), ballot.getNIZKP9());
+                ballot.getNIZKP6(), ballot.getNIZKP7());
 
             bb.addReceipt(voter, final_receipt);
 
@@ -195,9 +193,7 @@ public class IndiffElection extends Election {
         boolean hold5 = verifyNIZKP5(voter, receipt.b_indiff(), receipt.getNIZKP5());
         boolean hold6 = verifyNIZKP6(voter, receipt.b(), receipt.b_indiff(), receipt.getNIZKP6());
         boolean hold7 = verifyNIZKP7(voter, receipt.b(), receipt.b_indiff(), receipt.getNIZKP7());
-        boolean hold8 = verifyNIZKP8(voter, receipt.b(), receipt.getNIZKP8());
-        boolean hold9 = verifyNIZKP9(voter, receipt.b_indiff(), receipt.getNIZKP9());
-        return (hold0 && hold1 && hold2 && hold3 && hold4 && hold5 && hold6 && hold7 && hold8 && hold9);
+        return (hold0 && hold1 && hold2 && hold3 && hold4 && hold5 && hold6 && hold7);
 
     }
 
@@ -452,31 +448,6 @@ public class IndiffElection extends Election {
         return hold;
 
 
-    }
-
-    // helper function to verify NIZKP for ninth conjunction
-    private boolean verifyNIZKP8(int voter, BigInteger[][] b, BigInteger[][] nizkp8) {
-
-        boolean hold = true;
-
-        for (int i = 0; i < num_candidates; i++) {
-            BigInteger t = nizkp8[i][0];
-            BigInteger s = nizkp8[i][1];
-            BigInteger[] arr = {BigInteger.valueOf(voter), g1, b[i][i], t};
-            BigInteger c = BallotEncryptor.hash(arr);
-            BigInteger left = g1.modPow(s,p);
-            BigInteger right = b[i][i].modPow(c,p).multiply(t).mod(p);
-            if (left.compareTo(right) != 0) {
-                hold = false;
-            }
-        }
-
-        return hold;
-    }
-
-    // helper function to verify NIZKP for tenth conjunction
-    private boolean verifyNIZKP9(int voter, BigInteger[][] b_indiff, BigInteger[][] nizkp9) {
-        return verifyNIZKP8(voter, b_indiff, nizkp9);
     }
 
     // convert a vote to a pairwise comparison matrix permitting indifference

@@ -27,15 +27,12 @@ public class IndiffBallot extends Ballot {
     private BigInteger[][][] nizkp5;
     private BigInteger[][][] nizkp6;
     private BigInteger[][][][] nizkp7;
-    private BigInteger[][] nizkp8;
-    private BigInteger[][] nizkp9;
 
     public IndiffBallot(int voter, int[][] vote, int[][] vote_indiff, BigInteger[][] b, 
         BigInteger[][] y, BigInteger[][] x, BigInteger[][] b_indiff, BigInteger[][] y_indiff, 
         BigInteger[][] x_indiff, BigInteger[][][] nizkp0, BigInteger[][][] nizkp1,
         BigInteger[][][] nizkp2, BigInteger[][][] nizkp3, BigInteger[][] nizkp4,
-        BigInteger[][][] nizkp5, BigInteger[][][] nizkp6, BigInteger[][][][] nizkp7,
-        BigInteger[][] nizkp8, BigInteger[][] nizkp9) {
+        BigInteger[][][] nizkp5, BigInteger[][][] nizkp6, BigInteger[][][][] nizkp7) {
 
         super(voter, vote, b, y, x);
 
@@ -53,8 +50,6 @@ public class IndiffBallot extends Ballot {
         this.nizkp5 = nizkp5;
         this.nizkp6 = nizkp6;
         this.nizkp7 = nizkp7;
-        this.nizkp8 = nizkp8;
-        this.nizkp9 = nizkp9;
     }
 
     public int[][] vote_indiff() {
@@ -103,14 +98,6 @@ public class IndiffBallot extends Ballot {
 
     public BigInteger[][][][] getNIZKP7() {
         return this.nizkp7;
-    }
-
-    public BigInteger[][] getNIZKP8() {
-        return this.nizkp8;
-    }
-
-    public BigInteger[][] getNIZKP9() {
-        return this.nizkp9;
     }
 
 }

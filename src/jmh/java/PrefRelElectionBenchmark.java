@@ -23,7 +23,8 @@ public class PrefRelElectionBenchmark {
     public static class ElectionState {
 
         // specified number of candidates for which to run the benchmarks on
-        @Param({"2","3","4","5","6","7","8","9","10"})
+        //@Param({"2","3","4","5","6","7","8","9","10"})
+        @Param({"10"})
         public String candidates_val;
 
         // n-bit security levels
@@ -75,7 +76,7 @@ public class PrefRelElectionBenchmark {
         }
 
     }
-
+    /*
     // benchmark creation of ballots for a single vote
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
@@ -106,7 +107,7 @@ public class PrefRelElectionBenchmark {
         blackhole.consume(verified);
 
     }
-
+    */
     // benchmark verification of NIZKPs on the bulletin board for a single ballot
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)

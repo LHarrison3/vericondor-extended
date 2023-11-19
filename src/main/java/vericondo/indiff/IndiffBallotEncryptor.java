@@ -89,13 +89,7 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
         // b_b(i,j) = g0^x_b(i,j) || (k != i != j) : b_a(i,k) * b_b(i,k) = b_a(j,k) * b_b(i,k)
         BigInteger[][][][] nizkp7 = genNIZKP7(voter, vote, x, b, vote_indiff, x_indiff, b_indiff);
 
-        // b_a(i,i) = g0^x_a(i,i) 
-        BigInteger[][] nizkp8 = genNIZKP8(voter, x, b);
-
-        // b_b(i,i) = g0^x_b(i,i)
-        BigInteger[][] nizkp9 = genNIZKP9(voter, x_indiff, b_indiff);
-
-        return new IndiffBallot(voter, vote, vote_indiff, b, y, x, b_indiff, y_indiff, x_indiff, nizkp0, nizkp1, nizkp2, nizkp3, nizkp4, nizkp5, nizkp6, nizkp7, nizkp8, nizkp9);
+        return new IndiffBallot(voter, vote, vote_indiff, b, y, x, b_indiff, y_indiff, x_indiff, nizkp0, nizkp1, nizkp2, nizkp3, nizkp4, nizkp5, nizkp6, nizkp7);
     }
 
     // helper function to generate NIZKP for the first conjunction
@@ -267,8 +261,6 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
                     s1_p = r_p.add(x[j][i].multiply(cr).mod(q)).mod(q);
 
                 }
-
-                //System.out.println("s0: " + s0.toString());
 
                 nizkp3[i][j][0] = t0;
                 nizkp3[i][j][1] = t0_p;
@@ -606,39 +598,6 @@ public class IndiffBallotEncryptor extends BallotEncryptor {
 
         return nizkp7;
 
-    }
-
-    // helper function to generate NIZKP for the ninth conjunction
-    private BigInteger[][] genNIZKP8(int voter, BigInteger[][] x, BigInteger[][] b) {
-
-        BigInteger limit = q.subtract(BigInteger.ONE);
-
-        BigInteger[][] nizkp0 = new BigInteger[num_candidates][2];
-
-        BigInteger r;
-
-        BigInteger t;
-        BigInteger c;
-        BigInteger s;
-
-        for (int i = 0; i < num_candidates; i++) {
-            r = genRandom(limit);
-            t = g1.modPow(r, p);
-            BigInteger[] arr = {BigInteger.valueOf(voter), g1, b[i][i], t};
-            c = hash(arr);
-            s = r.add(c.multiply(x[i][i])).mod(p.subtract(BigInteger.ONE));
-            nizkp0[i][0] = t;
-            nizkp0[i][1] = s;
-
-        }
-
-        return nizkp0;
-
-    }
-
-    // helper function to generate NIZKP for tenth conjunction
-    private BigInteger[][] genNIZKP9(int voter, BigInteger[][] x_indiff, BigInteger[][] b_indiff) {
-        return genNIZKP8(voter, x_indiff, b_indiff);
     }
 
     // helper function to compute row products
